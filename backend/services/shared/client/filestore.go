@@ -17,6 +17,7 @@ import (
 )
 
 var _ErrInvalidClientToken = errors.New("could not perform zoom filestore action due to invalid access token")
+var _ErrInvalidContentLength = errors.New("could not perform zoom filestore actions due to exceeding content-length")
 
 type ZoomFilestore interface {
 	UploadFile(ctx context.Context, token, uid, filename string, file io.Reader) error
@@ -108,7 +109,7 @@ func (c zoomFilestoreClient) ValidateFileSize(ctx context.Context, limit int64, 
 	}
 
 	if val, err := strconv.ParseInt(headResp.Header().Get("Content-Length"), 10, 0); val > limit || err != nil {
-		return _ErrInvalidClientToken
+		return _ErrInvalidContentLength
 	}
 
 	return nil
