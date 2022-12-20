@@ -1,0 +1,1 @@
+export { OnlyofficePopup } from "./Popup";

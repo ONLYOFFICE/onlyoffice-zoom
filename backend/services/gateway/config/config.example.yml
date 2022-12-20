@@ -1,0 +1,37 @@
+environment: "development"
+server:
+  namespace: "onlyoffice"
+  name: "gateway"
+  version: 0
+  address: ":4044"
+  rate_limiter:
+    limit: 1000
+    iplimit: 100
+  cors:
+    origins: ["https://backend", "https://frontend"]
+zoom:
+  client_id: "client_id"
+  client_secret: "client_secret"
+  webhook_secret: "webhook_secret"
+  redirect_uri: "https://gateway/oauth/auth"
+repl:
+  namespace: "onlyoffice"
+  name: "gateway.repl"
+  version: 0
+  address: ":9999"
+  debug: true
+broker:
+  type: 2
+  addresses: [""]
+  secure: false
+registry:
+  addresses: [""]
+  type: 2
+tracer:
+  enable: true
+  address: "http://zipkin/api/v2/spans"
+  type: 1
+logger:
+  name: "gateway-logger"
+  level: 1
+  color: true

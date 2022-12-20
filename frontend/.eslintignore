@@ -1,0 +1,9 @@
+assets
+
+node_modules
+
+__tests__
+__snapshots__
+__mocks__
+
+setupTests.ts

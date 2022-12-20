@@ -1,0 +1,1 @@
+export { OnlyofficeSearchBar } from "./Search";

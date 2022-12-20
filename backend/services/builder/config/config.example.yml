@@ -1,0 +1,35 @@
+environment: "development"
+server:
+  version: 0
+  address: ":6060"
+  rate_limiter:
+    limit: 500
+zoom:
+  client_id: "client_id"
+  client_secret: "client_secret"
+repl:
+  version: 0
+  address: ":7979"
+  debug: true
+onlyoffice:
+  doc_secret: "onlyoffice_document_secret"
+  callback_url: "https://gateway_host/callback"
+redis:
+  redis_addresses: [""]
+  redis_buffer_size: 100
+broker:
+  type: 2
+  addresses: [""]
+  secure: false
+registry:
+  addresses: [""]
+  secure: false
+  type: 2
+tracer:
+  enable: true
+  address: "http://zipkin/api/v2/spans"
+  type: 1
+logger:
+  name: "builder-logger"
+  level: 1
+  color: true

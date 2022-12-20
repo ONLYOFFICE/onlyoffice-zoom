@@ -1,0 +1,1 @@
+export { OnlyofficeFile } from "./File";

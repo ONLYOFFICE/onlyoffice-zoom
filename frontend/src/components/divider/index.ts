@@ -1,0 +1,1 @@
+export { OnlyofficeDivider } from "./Divider";

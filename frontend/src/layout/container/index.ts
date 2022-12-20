@@ -1,0 +1,1 @@
+export { OnlyofficeBasicLayoutContainer } from "./Basic";

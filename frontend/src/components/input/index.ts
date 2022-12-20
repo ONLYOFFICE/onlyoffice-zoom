@@ -1,0 +1,1 @@
+export { OnlyofficeInput } from "./Input";

@@ -1,0 +1,1 @@
+export { OnlyofficeTile } from "./Tile";

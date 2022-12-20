@@ -1,0 +1,1 @@
+export { OnlyofficeNavbar } from "./Navbar";

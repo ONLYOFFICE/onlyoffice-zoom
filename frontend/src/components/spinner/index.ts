@@ -1,0 +1,1 @@
+export { OnlyofficeSpinner } from "./Spinner";
