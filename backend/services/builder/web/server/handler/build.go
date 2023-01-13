@@ -125,10 +125,11 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 			return nil, err
 		}
 
+		cbURL := config.EditorConfig.CallbackURL
 		if payload.Mid == "" {
 			c.logger.Debugf("request has no mid")
 			config.IssuedAt, config.ExpiresAt = time.Now().UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
-			config.EditorConfig.CallbackURL = fmt.Sprintf("%s?filename=%s", config.EditorConfig.CallbackURL, url.QueryEscape(payload.Filename))
+			config.EditorConfig.CallbackURL = fmt.Sprintf("%s?filename=%s", cbURL, url.QueryEscape(payload.Filename))
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {
 				c.logger.Errorf("could not sign a docs config. Error: %s", err.Error())
 				return nil, err
@@ -139,7 +140,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 		md := md5.Sum([]byte(payload.Mid))
 		payload.Mid = hex.EncodeToString(md[:])
 		c.logger.Debugf("appending mid to callback url: %s", payload.Mid)
-		config.EditorConfig.CallbackURL = fmt.Sprintf("%s?mid=%s&filename=%s", config.EditorConfig.CallbackURL, payload.Mid, url.QueryEscape(payload.Filename))
+		config.EditorConfig.CallbackURL = fmt.Sprintf("%s?mid=%s&filename=%s", cbURL, payload.Mid, url.QueryEscape(payload.Filename))
 
 		c.logger.Debugf("trying to find a docs session for mid: %s", payload.Mid)
 		if session, err := c.service.GetSession(ctx, payload.Mid); err == nil {
@@ -163,6 +164,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 				},
 			}
 			config.DocumentType = fileType
+			config.EditorConfig.CallbackURL = fmt.Sprintf("%s?mid=%s&filename=%s", cbURL, payload.Mid, url.QueryEscape(session.Filename))
 			config.IssuedAt, config.ExpiresAt = time.Now().UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {
 				c.logger.Errorf("could not sign a docs config for mid: %s. Error: %s", payload.Mid, err.Error())
