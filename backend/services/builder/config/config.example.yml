@@ -2,8 +2,11 @@ environment: "development"
 server:
   version: 0
   address: ":6060"
-  rate_limiter:
-    limit: 500
+  resilience:
+    rate_limiter:
+      limit: 500
+    circuit_breaker:
+      timeout: 2500
 zoom:
   client_id: "client_id"
   client_secret: "client_secret"

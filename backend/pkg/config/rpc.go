@@ -3,11 +3,11 @@ package config
 import "strings"
 
 type RPCServer struct {
-	Namespace   string      `yaml:"namespace" env:"RPC_NAMESPACE,overwrite"`
-	Name        string      `yaml:"name" env:"RPC_NAME,overwrite"`
-	Version     int         `yaml:"version" env:"RPC_VERSION,overwrite"`
-	Address     string      `yaml:"address" env:"RPC_ADDRESS,overwrite"`
-	RateLimiter RateLimiter `yaml:"rate_limiter"`
+	Namespace  string     `yaml:"namespace" env:"RPC_NAMESPACE,overwrite"`
+	Name       string     `yaml:"name" env:"RPC_NAME,overwrite"`
+	Version    int        `yaml:"version" env:"RPC_VERSION,overwrite"`
+	Address    string     `yaml:"address" env:"RPC_ADDRESS,overwrite"`
+	Resilience Resilience `yaml:"resilience"`
 }
 
 func (rps *RPCServer) Validate() error {

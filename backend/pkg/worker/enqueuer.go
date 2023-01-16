@@ -15,12 +15,7 @@ func NewRedisEnqueuer(opts ...Option) *work.Enqueuer {
 		redis.DialWriteTimeout(options.RedisWriteTimeout),
 		redis.DialUsername(options.RedisUsername),
 		redis.DialPassword(options.RedisPassword),
-		redis.DialTLSConfig(options.TLSConfig),
 		redis.DialDatabase(options.RedisDatabase),
-	}
-
-	if options.TLSConfig != nil {
-		o = append(o, redis.DialTLSConfig(options.TLSConfig))
 	}
 
 	pool := &redis.Pool{

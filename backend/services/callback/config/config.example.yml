@@ -2,9 +2,12 @@ environment: "development"
 server:
   version: 0
   address: ":5044"
-  rate_limiter:
-    limit: 1000
-    iplimit: 100
+  resilience:
+    rate_limiter:
+      limit: 1000
+      iplimit: 100
+    circuit_breaker:
+      timeout: 2500
   cors:
     origins: ["https://backend", "https://frontend"]
 onlyoffice:
@@ -17,10 +20,8 @@ repl:
 broker:
   type: 2
   addresses: [""]
-  secure: false
 registry:
   addresses: [""]
-  secure: false
   type: 2
 tracer:
   enable: true

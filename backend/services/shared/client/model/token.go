@@ -1,6 +1,8 @@
 package model
 
-import "strings"
+import (
+	"strings"
+)
 
 type Token struct {
 	AccessToken  string `json:"access_token"`

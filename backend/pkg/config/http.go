@@ -3,12 +3,12 @@ package config
 import "strings"
 
 type HttpServer struct {
-	Namespace   string      `yaml:"namespace" env:"HTTP_NAMESPACE,overwrite"`
-	Name        string      `yaml:"name" env:"HTTP_NAME,overwrite"`
-	Version     int         `yaml:"version" env:"HTTP_VERSION,overwrite"`
-	Address     string      `yaml:"address" env:"HTTP_ADDRESS,overwrite"`
-	RateLimiter RateLimiter `yaml:"rate_limiter"`
-	CORS        CORS        `yaml:"cors"`
+	Namespace  string     `yaml:"namespace" env:"HTTP_NAMESPACE,overwrite"`
+	Name       string     `yaml:"name" env:"HTTP_NAME,overwrite"`
+	Version    int        `yaml:"version" env:"HTTP_VERSION,overwrite"`
+	Address    string     `yaml:"address" env:"HTTP_ADDRESS,overwrite"`
+	Resilience Resilience `yaml:"resilience"`
+	CORS       CORS       `yaml:"cors"`
 }
 
 func (hs *HttpServer) Validate() error {

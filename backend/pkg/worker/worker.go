@@ -15,13 +15,8 @@ func NewRedisWorker(ctx interface{}, opts ...Option) *work.WorkerPool {
 		redis.DialWriteTimeout(options.RedisWriteTimeout),
 		redis.DialUsername(options.RedisUsername),
 		redis.DialPassword(options.RedisPassword),
-		redis.DialTLSConfig(options.TLSConfig),
 		redis.DialDatabase(options.RedisDatabase),
 		redis.DialTLSSkipVerify(false),
-	}
-
-	if options.TLSConfig != nil {
-		o = append(o, redis.DialTLSConfig(options.TLSConfig))
 	}
 
 	pool := &redis.Pool{

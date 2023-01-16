@@ -1,6 +1,8 @@
 package model
 
-import "strings"
+import (
+	"strings"
+)
 
 type User struct {
 	ID        string `json:"id"`
@@ -22,14 +24,6 @@ func (u *User) Validate() error {
 	}
 
 	if u.Firstname == "" {
-		return ErrInvalidTokenFormat
-	}
-
-	if u.Lastname == "" {
-		return ErrInvalidTokenFormat
-	}
-
-	if u.Email == "" {
 		return ErrInvalidTokenFormat
 	}
 

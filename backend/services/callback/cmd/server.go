@@ -48,6 +48,26 @@ func Server(config *config.Config) *cli.Command {
 				Name:  "http_iplimits",
 				Usage: "sets http server's IP limits",
 			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_timeout",
+				Usage: "sets hystrix timeout",
+			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_max_concurrent",
+				Usage: "sets hystrix max concurrency level",
+			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_volume_threshold",
+				Usage: "sets hystrix volume threshold",
+			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_sleep_window",
+				Usage: "sets hystrix sleep window",
+			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_error_percent",
+				Usage: "sets hystrix error percent threshold",
+			},
 			&cli.StringFlag{
 				Name:  "onlyoffice_doc_secret",
 				Usage: "sets onlyoffice document server jwt secret",
@@ -64,17 +84,9 @@ func Server(config *config.Config) *cli.Command {
 				Name:  "broker_addresses",
 				Usage: "sets http server's broker addresses",
 			},
-			&cli.StringFlag{
-				Name:  "broker_secure",
-				Usage: "sets http server's broker secure flag",
-			},
 			&cli.StringSliceFlag{
 				Name:  "registry_addresses",
 				Usage: "sets http server's registry addresses",
-			},
-			&cli.StringFlag{
-				Name:  "registry_secure",
-				Usage: "sets http server's registry secure flag",
 			},
 			&cli.IntFlag{
 				Name:  "registry_type",
@@ -147,22 +159,26 @@ func Server(config *config.Config) *cli.Command {
 
 				CONFIG_PATH = c.String("config_path")
 
-				HTTP_VERSION   = c.Int("http_version")
-				HTTP_ADDRESS   = c.String("http_address")
-				HTTP_LIMITS    = c.Uint64("http_limits")
-				HTTP_LIMITS_IP = c.Uint64("http_iplimits")
+				HTTP_VERSION = c.Int("http_version")
+				HTTP_ADDRESS = c.String("http_address")
+
+				HTTP_LIMITS                   = c.Uint64("http_limits")
+				HTTP_LIMITS_IP                = c.Uint64("http_iplimits")
+				HTTP_CIRCUIT_TIMEOUT          = c.Int("circuit_breaker_timeout")
+				HTTP_CIRCUIT_MAX_CONCURRENT   = c.Int("circuit_breaker_max_concurrent")
+				HTTP_CIRCUIT_VOLUME_THRESHOLD = c.Int("circuit_breaker_volume_threshold")
+				HTTP_CIRCUIT_SLEEP_WINDOW     = c.Int("circuit_breaker_sleep_window")
+				HTTP_CIRCUIT_ERROR_PERCENT    = c.Int("circuit_breaker_error_percent")
 
 				ONLYOFFICE_DOC_SECRET = c.String("onlyoffice_doc_secret")
 				ONLYOFFICE_MAX_SIZE   = c.String("onlyoffice_max_size")
 
 				REGISTRY_ADDRESSES = c.StringSlice("registry_addresses")
-				REGISTRY_SECURE    = c.String("registry_secure")
 				REGISTRY_TYPE      = c.Int("registry_type")
 				REGISTRY_TTL       = c.Duration("registry_ttl")
 
 				BROKER_TYPE      = c.Int("broker_type")
 				BROKER_ADDRESSES = c.StringSlice("broker_addresses")
-				BROKER_SECURE    = c.String("broker_secure")
 
 				TRACER_ADDRESS = c.String("tracer_address")
 				TRACER_TYPE    = c.String("tracer_type")
@@ -184,9 +200,6 @@ func Server(config *config.Config) *cli.Command {
 
 			config.Onlyoffice.MaxSize = 2100000
 			config.Worker.RedisDatabase = WORKER_DATABASE
-			if err := envconfig.Process(context.Background(), config); err != nil {
-				return err
-			}
 
 			if CONFIG_PATH != "" {
 				file, err := os.Open(CONFIG_PATH)
@@ -200,6 +213,10 @@ func Server(config *config.Config) *cli.Command {
 				if err := decoder.Decode(&config); err != nil {
 					return err
 				}
+			}
+
+			if err := envconfig.Process(context.Background(), config); err != nil {
+				return err
 			}
 
 			if _, ok := shared.SUPPORTED_ENVIRONMENTS[config.Environment]; !ok {
@@ -225,11 +242,31 @@ func Server(config *config.Config) *cli.Command {
 			}
 
 			if HTTP_LIMITS > 0 {
-				config.Server.RateLimiter.Limit = HTTP_LIMITS
+				config.Server.Resilience.RateLimiter.Limit = HTTP_LIMITS
 			}
 
 			if HTTP_LIMITS_IP > 0 {
-				config.Server.RateLimiter.IPLimit = HTTP_LIMITS_IP
+				config.Server.Resilience.RateLimiter.IPLimit = HTTP_LIMITS_IP
+			}
+
+			if HTTP_CIRCUIT_TIMEOUT > 0 {
+				config.Server.Resilience.CircuitBreaker.Timeout = HTTP_CIRCUIT_TIMEOUT
+			}
+
+			if HTTP_CIRCUIT_MAX_CONCURRENT > 0 {
+				config.Server.Resilience.CircuitBreaker.MaxConcurrent = HTTP_CIRCUIT_MAX_CONCURRENT
+			}
+
+			if HTTP_CIRCUIT_VOLUME_THRESHOLD > 0 {
+				config.Server.Resilience.CircuitBreaker.VolumeThreshold = HTTP_CIRCUIT_VOLUME_THRESHOLD
+			}
+
+			if HTTP_CIRCUIT_SLEEP_WINDOW > 0 {
+				config.Server.Resilience.CircuitBreaker.SleepWindow = HTTP_CIRCUIT_SLEEP_WINDOW
+			}
+
+			if HTTP_CIRCUIT_ERROR_PERCENT > 0 {
+				config.Server.Resilience.CircuitBreaker.ErrorPercentThreshold = HTTP_CIRCUIT_ERROR_PERCENT
 			}
 
 			if ONLYOFFICE_DOC_SECRET != "" {
@@ -247,26 +284,12 @@ func Server(config *config.Config) *cli.Command {
 				config.Registry.Addresses = REGISTRY_ADDRESSES
 			}
 
-			if REGISTRY_SECURE != "" {
-				flag, err := strconv.ParseBool(REGISTRY_SECURE)
-				if err == nil {
-					config.Registry.Secure = flag
-				}
-			}
-
 			if BROKER_TYPE > 0 {
 				config.Broker.Type = BROKER_TYPE
 			}
 
 			if len(BROKER_ADDRESSES) > 0 {
 				config.Broker.Addrs = BROKER_ADDRESSES
-			}
-
-			if BROKER_SECURE != "" {
-				flag, err := strconv.ParseBool(BROKER_SECURE)
-				if err == nil {
-					config.Broker.Secure = flag
-				}
 			}
 
 			if REGISTRY_TYPE > 0 {

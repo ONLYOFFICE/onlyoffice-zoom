@@ -12,15 +12,15 @@ import (
 type Config struct {
 	Environment string `yaml:"environment" env:"ENVIRONMENT,overwrite"`
 	Machine     string
-	Server      config.HttpServer        `yaml:"server"`
-	REPL        config.ReplServer        `yaml:"repl"`
-	Onlyoffice  shared.OnlyofficeConfig  `yaml:"onlyoffice"`
-	Broker      config.Broker            `yaml:"broker"`
-	Registry    config.Registry          `yaml:"registry"`
-	Logger      config.Logger            `yaml:"logger"`
-	Tracer      config.Tracer            `yaml:"tracer"`
-	Worker      config.RedisWorkerConfig `yaml:"worker"`
-	Context     context.Context          `yaml:"-"`
+	Server      config.HttpServer       `yaml:"server"`
+	REPL        config.ReplServer       `yaml:"repl"`
+	Onlyoffice  shared.OnlyofficeConfig `yaml:"onlyoffice"`
+	Broker      config.Broker           `yaml:"broker"`
+	Registry    config.Registry         `yaml:"registry"`
+	Logger      config.Logger           `yaml:"logger"`
+	Tracer      config.Tracer           `yaml:"tracer"`
+	Worker      config.WorkerConfig     `yaml:"worker"`
+	Context     context.Context         `yaml:"-"`
 }
 
 func (c *Config) Validate() error {

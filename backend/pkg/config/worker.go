@@ -1,6 +1,7 @@
 package config
 
-type RedisWorkerConfig struct {
+// Go-craft work configuration
+type WorkerConfig struct {
 	MaxActive      int    `yaml:"max_active" env:"WORKER_MAX_ACTIVE,overwrite"`
 	MaxIdle        int    `yaml:"max_size" env:"WORKER_MAX_SIZE,overwrite"`
 	MaxConcurrency uint   `yaml:"max_concurrency" env:"WORKER_MAX_CONCURRENCY,overwrite"`

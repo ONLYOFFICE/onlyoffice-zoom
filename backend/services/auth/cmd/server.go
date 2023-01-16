@@ -44,6 +44,26 @@ func Server(config *config.Config) *cli.Command {
 				Name:  "rpc_limits",
 				Usage: "sets rpc server's limits",
 			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_timeout",
+				Usage: "sets hystrix timeout",
+			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_max_concurrent",
+				Usage: "sets hystrix max concurrency level",
+			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_volume_threshold",
+				Usage: "sets hystrix volume threshold",
+			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_sleep_window",
+				Usage: "sets hystrix sleep window",
+			},
+			&cli.IntFlag{
+				Name:  "circuit_breaker_error_percent",
+				Usage: "sets hystrix error percent threshold",
+			},
 			&cli.StringFlag{
 				Name:  "zoom_client_id",
 				Usage: "sets zoom oauth clientID",
@@ -60,17 +80,9 @@ func Server(config *config.Config) *cli.Command {
 				Name:  "broker_addresses",
 				Usage: "sets http server's broker addresses",
 			},
-			&cli.StringFlag{
-				Name:  "broker_secure",
-				Usage: "sets http server's broker secure flag",
-			},
 			&cli.StringSliceFlag{
 				Name:  "registry_addresses",
 				Usage: "sets http server's registry addresses",
-			},
-			&cli.StringFlag{
-				Name:  "registry_secure",
-				Usage: "sets http server's registry secure flag",
 			},
 			&cli.IntFlag{
 				Name:  "registry_type",
@@ -112,19 +124,23 @@ func Server(config *config.Config) *cli.Command {
 
 				RPC_VERSION = c.Int("rpc_version")
 				RPC_ADDRESS = c.String("rpc_address")
-				RPC_LIMITS  = c.Uint64("rpc_limits")
+
+				RPC_LIMITS                   = c.Uint64("rpc_limits")
+				RPC_CIRCUIT_TIMEOUT          = c.Int("circuit_breaker_timeout")
+				RPC_CIRCUIT_MAX_CONCURRENT   = c.Int("circuit_breaker_max_concurrent")
+				RPC_CIRCUIT_VOLUME_THRESHOLD = c.Int("circuit_breaker_volume_threshold")
+				RPC_CIRCUIT_SLEEP_WINDOW     = c.Int("circuit_breaker_sleep_window")
+				RPC_CIRCUIT_ERROR_PERCENT    = c.Int("circuit_breaker_error_percent")
 
 				ZOOM_CLIENT_ID     = c.String("zoom_client_id")
 				ZOOM_CLIENT_SECRET = c.String("zoom_client_secret")
 
 				REGISTRY_ADDRESSES = c.StringSlice("registry_addresses")
-				REGISTRY_SECURE    = c.String("registry_secure")
 				REGISTRY_TYPE      = c.Int("registry_type")
 				REGISTRY_TTL       = c.Duration("registry_ttl")
 
 				BROKER_TYPE      = c.Int("broker_type")
 				BROKER_ADDRESSES = c.StringSlice("broker_addresses")
-				BROKER_SECURE    = c.String("broker_secure")
 
 				TRACER_ADDRESS = c.String("tracer_address")
 				TRACER_TYPE    = c.String("tracer_type")
@@ -135,10 +151,6 @@ func Server(config *config.Config) *cli.Command {
 
 				PERSISTENCE_URL = c.String("persistence_url")
 			)
-
-			if err := envconfig.Process(context.Background(), config); err != nil {
-				return err
-			}
 
 			if CONFIG_PATH != "" {
 				file, err := os.Open(CONFIG_PATH)
@@ -152,6 +164,10 @@ func Server(config *config.Config) *cli.Command {
 				if err := decoder.Decode(&config); err != nil {
 					return err
 				}
+			}
+
+			if err := envconfig.Process(context.Background(), config); err != nil {
+				return err
 			}
 
 			if _, ok := shared.SUPPORTED_ENVIRONMENTS[config.Environment]; !ok {
@@ -177,7 +193,27 @@ func Server(config *config.Config) *cli.Command {
 			}
 
 			if RPC_LIMITS > 0 {
-				config.Server.RateLimiter.Limit = RPC_LIMITS
+				config.Server.Resilience.RateLimiter.Limit = RPC_LIMITS
+			}
+
+			if RPC_CIRCUIT_TIMEOUT > 0 {
+				config.Server.Resilience.CircuitBreaker.Timeout = RPC_CIRCUIT_TIMEOUT
+			}
+
+			if RPC_CIRCUIT_MAX_CONCURRENT > 0 {
+				config.Server.Resilience.CircuitBreaker.MaxConcurrent = RPC_CIRCUIT_MAX_CONCURRENT
+			}
+
+			if RPC_CIRCUIT_VOLUME_THRESHOLD > 0 {
+				config.Server.Resilience.CircuitBreaker.VolumeThreshold = RPC_CIRCUIT_VOLUME_THRESHOLD
+			}
+
+			if RPC_CIRCUIT_SLEEP_WINDOW > 0 {
+				config.Server.Resilience.CircuitBreaker.SleepWindow = RPC_CIRCUIT_SLEEP_WINDOW
+			}
+
+			if RPC_CIRCUIT_ERROR_PERCENT > 0 {
+				config.Server.Resilience.CircuitBreaker.ErrorPercentThreshold = RPC_CIRCUIT_ERROR_PERCENT
 			}
 
 			if ZOOM_CLIENT_ID != "" {
@@ -192,26 +228,12 @@ func Server(config *config.Config) *cli.Command {
 				config.Registry.Addresses = REGISTRY_ADDRESSES
 			}
 
-			if REGISTRY_SECURE != "" {
-				flag, err := strconv.ParseBool(REGISTRY_SECURE)
-				if err == nil {
-					config.Registry.Secure = flag
-				}
-			}
-
 			if BROKER_TYPE > 0 {
 				config.Broker.Type = BROKER_TYPE
 			}
 
 			if len(BROKER_ADDRESSES) > 0 {
 				config.Broker.Addrs = BROKER_ADDRESSES
-			}
-
-			if BROKER_SECURE != "" {
-				flag, err := strconv.ParseBool(BROKER_SECURE)
-				if err == nil {
-					config.Broker.Secure = flag
-				}
 			}
 
 			if REGISTRY_TYPE > 0 {

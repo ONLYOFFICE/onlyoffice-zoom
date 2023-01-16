@@ -2,8 +2,9 @@ environment: "development"
 server:
   version: 0
   address: ":5051"
-  rate_limiter:
-    limit: 500
+  resilience:
+    rate_limiter:
+      limit: 500
 zoom:
   client_id: "zoom_client_id"
   client_secret: "zoom_client_secret"
@@ -16,10 +17,8 @@ repl:
 broker:
   type: 2
   addresses: [""]
-  secure: false
 registry:
   addresses: [""]
-  secure: false
   type: 2
 tracer:
   enable: true

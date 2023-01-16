@@ -59,8 +59,7 @@ func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 
 		state := strings.TrimSpace(query.Get("state"))
 		if state != session.Values["state"] {
-			rw.WriteHeader(http.StatusBadRequest)
-			c.logger.Debug("empty auth state parameter")
+			http.Redirect(rw, r, "/oauth/install", http.StatusMovedPermanently)
 			return
 		}
 

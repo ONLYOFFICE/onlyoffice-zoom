@@ -41,7 +41,6 @@ func NewService(opts ...Option) Service {
 
 	registry := registry.NewRegistry(
 		registry.WithAddresses(options.RegistryOptions.Addresses...),
-		registry.WithSecure(options.RegistryOptions.Secure),
 		registry.WithRegisryType(options.RegistryOptions.RegistryType),
 		registry.WithCacheTTL(options.RegistryOptions.CacheTTL),
 	)
@@ -50,7 +49,6 @@ func NewService(opts ...Option) Service {
 		registry,
 		messaging.WithBrokerType(options.BrokerOptions.BrokerType),
 		messaging.WithAddrs(options.BrokerOptions.Addrs...),
-		messaging.WithSecure(options.BrokerOptions.Secure),
 		messaging.WithContext(options.Context),
 	)
 
@@ -73,7 +71,14 @@ func NewService(opts ...Option) Service {
 		}
 	}
 
-	hystrix.ConfigureDefault(hystrix.CommandConfig{Timeout: 2500})
+	hystrix.ConfigureDefault(hystrix.CommandConfig{
+		Timeout:                options.CircuitBreakerTimeout,
+		MaxConcurrentRequests:  options.CircuitBreakerMaxConcurrent,
+		RequestVolumeThreshold: options.CircuitBreakerVolumeThreshold,
+		SleepWindow:            options.CircuitBreakerSleepWindow,
+		ErrorPercentThreshold:  options.CircuitBreakerErrorPercentThreshold,
+	})
+
 	service := micro.NewService(
 		micro.Name(strings.Join([]string{options.Namespace, options.Name}, ":")),
 		micro.Version(strconv.Itoa(options.Version)),

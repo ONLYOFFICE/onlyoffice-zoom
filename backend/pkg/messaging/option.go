@@ -18,14 +18,12 @@ type Option func(*Options)
 type Options struct {
 	BrokerType BrokerType
 	Addrs      []string
-	Secure     bool
 	Context    context.Context
 }
 
 // NewOptions initializes the options.
 func NewOptions(opts ...Option) Options {
 	opt := Options{
-		Secure:  false,
 		Context: context.Background(),
 	}
 
@@ -49,13 +47,6 @@ func WithAddrs(val ...string) Option {
 		if len(val) > 0 {
 			o.Addrs = val
 		}
-	}
-}
-
-// WithSecure sets broker secure flag
-func WithSecure(val bool) Option {
-	return func(o *Options) {
-		o.Secure = val
 	}
 }
 

@@ -19,7 +19,12 @@ func NewService(opts ...Option) (*rpc.Service, error) {
 		rpc.WithName(options.Config.Name),
 		rpc.WithVersion(options.Config.Version),
 		rpc.WithAddress(options.Config.Address),
-		rpc.WithLimits(options.Config.RateLimiter.Limit),
+		rpc.WithLimits(options.Config.Resilience.RateLimiter.Limit),
+		rpc.WithCircuitBreakerTimeout(options.Config.Resilience.CircuitBreaker.Timeout),
+		rpc.WithCircuitBreakerVolumeThreshold(options.Config.Resilience.CircuitBreaker.VolumeThreshold),
+		rpc.WithCircuitBreakerSleepWindow(options.Config.Resilience.CircuitBreaker.SleepWindow),
+		rpc.WithCircuitBreakerMaxConcurrent(options.Config.Resilience.CircuitBreaker.MaxConcurrent),
+		rpc.WithCircuitBreakerErrorPercentThreshold(options.Config.Resilience.CircuitBreaker.ErrorPercentThreshold),
 		rpc.WithRPC(server.NewConfigRPCServer(
 			server.WithClientID(options.Zoom.ClientID),
 			server.WithClientSecret(options.Zoom.ClientSecret),
@@ -39,12 +44,10 @@ func NewService(opts ...Option) (*rpc.Service, error) {
 		rpc.WithBrokerOptions(messaging.NewOptions(
 			messaging.WithAddrs(options.Broker.Addrs...),
 			messaging.WithBrokerType(messaging.BrokerType(options.Broker.Type)),
-			messaging.WithSecure(options.Broker.Secure),
 			messaging.WithContext(options.Context),
 		)),
 		rpc.WithRegistryOptions(registry.Options{
 			Addresses:    options.Registry.Addresses,
-			Secure:       options.Registry.Secure,
 			CacheTTL:     options.Registry.CacheTTL,
 			RegistryType: registry.RegistryType(options.Registry.RegistryType),
 		}),

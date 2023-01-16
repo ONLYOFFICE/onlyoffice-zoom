@@ -15,14 +15,6 @@ type Persistence struct {
 
 func (p *Persistence) Validate() error {
 	p.Url = strings.TrimSpace(p.Url)
-
-	if p.Url == "" {
-		return &shared.InvalidConfigurationParameterError{
-			Parameter: "Persistence URL",
-			Reason:    "Should not be empty",
-		}
-	}
-
 	return nil
 }
 

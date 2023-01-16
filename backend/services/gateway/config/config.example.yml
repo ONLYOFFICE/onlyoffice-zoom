@@ -4,9 +4,12 @@ server:
   name: "gateway"
   version: 0
   address: ":4044"
-  rate_limiter:
-    limit: 1000
-    iplimit: 100
+  resilience:
+    rate_limiter:
+      limit: 1000
+      iplimit: 100
+    circuit_breaker:
+      timeout: 2500
   cors:
     origins: ["https://backend", "https://frontend"]
 zoom:
@@ -23,7 +26,6 @@ repl:
 broker:
   type: 2
   addresses: [""]
-  secure: false
 registry:
   addresses: [""]
   type: 2

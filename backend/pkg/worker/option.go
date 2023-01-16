@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"crypto/tls"
 	"strings"
 	"time"
 )
@@ -20,7 +19,6 @@ type Options struct {
 	RedisDatabase     int
 	RedisReadTimeout  time.Duration
 	RedisWriteTimeout time.Duration
-	TLSConfig         *tls.Config
 }
 
 // NewOptions initializes the options.
@@ -95,14 +93,6 @@ func WithRedisDatabase(val int) Option {
 	return func(o *Options) {
 		if val > 0 {
 			o.RedisDatabase = val
-		}
-	}
-}
-
-func WithTLSConfig(val *tls.Config) Option {
-	return func(o *Options) {
-		if val != nil {
-			o.TLSConfig = val
 		}
 	}
 }

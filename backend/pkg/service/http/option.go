@@ -25,19 +25,24 @@ type Option func(*Options)
 
 // Options defines the available options.
 type Options struct {
-	Namespace       string
-	Name            string
-	Version         int
-	Address         string
-	Limits          uint64
-	IPLimits        uint64
-	Server          ServerEngine
-	Logger          log.Logger
-	Tracer          trace.Options
-	CORS            cors.Options
-	BrokerOptions   messaging.Options
-	RegistryOptions registry.Options
-	Context         context.Context
+	Namespace                           string
+	Name                                string
+	Version                             int
+	Address                             string
+	Limits                              uint64
+	IPLimits                            uint64
+	CircuitBreakerTimeout               int
+	CircuitBreakerMaxConcurrent         int
+	CircuitBreakerVolumeThreshold       int
+	CircuitBreakerSleepWindow           int
+	CircuitBreakerErrorPercentThreshold int
+	Server                              ServerEngine
+	Logger                              log.Logger
+	Tracer                              trace.Options
+	CORS                                cors.Options
+	BrokerOptions                       messaging.Options
+	RegistryOptions                     registry.Options
+	Context                             context.Context
 }
 
 // newOptions initializes the options.
@@ -113,6 +118,51 @@ func WithIPLimits(val uint64) Option {
 	return func(o *Options) {
 		if val > 0 {
 			o.IPLimits = val
+		}
+	}
+}
+
+// WithCircuitBreakerTimeout sets hystrix timeout
+func WithCircuitBreakerTimeout(val int) Option {
+	return func(o *Options) {
+		if val > 0 {
+			o.CircuitBreakerTimeout = val
+		}
+	}
+}
+
+// WithCircuitBreakerMaxConcurrent sets hystrix max concurrency level
+func WithCircuitBreakerMaxConcurrent(val int) Option {
+	return func(o *Options) {
+		if val > 0 {
+			o.CircuitBreakerMaxConcurrent = val
+		}
+	}
+}
+
+// WithCircuitBreakerVolumeThreshold sets hystrix threshold
+func WithCircuitBreakerVolumeThreshold(val int) Option {
+	return func(o *Options) {
+		if val > 0 {
+			o.CircuitBreakerVolumeThreshold = val
+		}
+	}
+}
+
+// WithCircuitBreakerSleepWindow sets hystrix sleep window
+func WithCircuitBreakerSleepWindow(val int) Option {
+	return func(o *Options) {
+		if val > 0 {
+			o.CircuitBreakerSleepWindow = val
+		}
+	}
+}
+
+// WithCircuitBreakerErrorPercentThreshold sets hystrix error threshold
+func WithCircuitBreakerErrorPercentThreshold(val int) Option {
+	return func(o *Options) {
+		if val > 0 {
+			o.CircuitBreakerErrorPercentThreshold = val
 		}
 	}
 }

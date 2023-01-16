@@ -15,7 +15,6 @@ func NewBroker(registry registry.Registry, opts ...Option) broker.Broker {
 	bo := []broker.Option{
 		broker.Addrs(options.Addrs...),
 		broker.Registry(registry),
-		broker.Secure(options.Secure),
 	}
 
 	var b broker.Broker

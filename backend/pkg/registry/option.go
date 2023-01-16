@@ -17,7 +17,6 @@ type Option func(*Options)
 // Options defines the available options.
 type Options struct {
 	Addresses    []string
-	Secure       bool
 	CacheTTL     time.Duration
 	RegistryType RegistryType
 }
@@ -41,12 +40,6 @@ func WithAddresses(val ...string) Option {
 		if len(val) > 0 {
 			o.Addresses = val
 		}
-	}
-}
-
-func WithSecure(val bool) Option {
-	return func(o *Options) {
-		o.Secure = val
 	}
 }
 

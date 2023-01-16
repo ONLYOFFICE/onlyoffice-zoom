@@ -19,7 +19,7 @@ type Options struct {
 	Tracer     config.Tracer
 	Broker     config.Broker
 	Registry   config.Registry
-	Worker     config.RedisWorkerConfig
+	Worker     config.WorkerConfig
 	Context    context.Context
 }
 
@@ -90,7 +90,7 @@ func WithRegistry(val config.Registry) Option {
 	}
 }
 
-func WithWorker(val config.RedisWorkerConfig) Option {
+func WithWorker(val config.WorkerConfig) Option {
 	return func(o *Options) {
 		o.Worker = val
 	}

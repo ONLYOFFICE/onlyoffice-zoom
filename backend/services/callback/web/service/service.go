@@ -21,8 +21,13 @@ func NewService(opts ...Option) (*http.Service, error) {
 		http.WithName(options.Config.Name),
 		http.WithVersion(options.Config.Version),
 		http.WithAddress(options.Config.Address),
-		http.WithLimits(options.Config.RateLimiter.Limit),
-		http.WithIPLimits(options.Config.RateLimiter.IPLimit),
+		http.WithLimits(options.Config.Resilience.RateLimiter.Limit),
+		http.WithIPLimits(options.Config.Resilience.RateLimiter.IPLimit),
+		http.WithCircuitBreakerVolumeThreshold(options.Config.Resilience.CircuitBreaker.VolumeThreshold),
+		http.WithCircuitBreakerTimeout(options.Config.Resilience.CircuitBreaker.Timeout),
+		http.WithCircuitBreakerSleepWindow(options.Config.Resilience.CircuitBreaker.SleepWindow),
+		http.WithCircuitBreakerMaxConcurrent(options.Config.Resilience.CircuitBreaker.MaxConcurrent),
+		http.WithCircuitBreakerErrorPercentThreshold(options.Config.Resilience.CircuitBreaker.ErrorPercentThreshold),
 		http.WithServer(
 			server.NewServer(
 				server.WithLogger(options.Logger),
@@ -57,12 +62,10 @@ func NewService(opts ...Option) (*http.Service, error) {
 		http.WithBrokerOptions(messaging.NewOptions(
 			messaging.WithAddrs(options.Broker.Addrs...),
 			messaging.WithBrokerType(messaging.BrokerType(options.Broker.Type)),
-			messaging.WithSecure(options.Broker.Secure),
 			messaging.WithContext(options.Context),
 		)),
 		http.WithRegistryOptions(registry.Options{
 			Addresses:    options.Registry.Addresses,
-			Secure:       options.Registry.Secure,
 			CacheTTL:     options.Registry.CacheTTL,
 			RegistryType: registry.RegistryType(options.Registry.RegistryType),
 		}),

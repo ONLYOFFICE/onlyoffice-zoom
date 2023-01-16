@@ -18,27 +18,22 @@ func NewRegistry(opts ...Option) registry.Registry {
 	case Kubernetes:
 		r = kubernetes.NewRegistry(
 			registry.Addrs(options.Addresses...),
-			registry.Secure(options.Secure),
 		)
 	case Consul:
 		r = consul.NewRegistry(
 			registry.Addrs(options.Addresses...),
-			registry.Secure(options.Secure),
 		)
 	case Etcd:
 		r = etcd.NewRegistry(
 			registry.Addrs(options.Addresses...),
-			registry.Secure(options.Secure),
 		)
 	case MDNS:
 		r = mdns.NewRegistry(
 			registry.Addrs(options.Addresses...),
-			registry.Secure(options.Secure),
 		)
 	default:
 		r = mdns.NewRegistry(
 			registry.Addrs(options.Addresses...),
-			registry.Secure(options.Secure),
 		)
 	}
 
