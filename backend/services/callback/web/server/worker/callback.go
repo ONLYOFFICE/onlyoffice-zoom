@@ -69,7 +69,7 @@ func (c callbackWorker) UploadFile(job *work.Job) error {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		req := c.client.NewRequest("onlyoffice:auth", "UserHandler.GetUser", uid)
+		req := c.client.NewRequest("onlyoffice:auth", "UserSelectHandler.GetUser", uid)
 
 		var ures response.UserResponse
 		if err := c.client.Call(tctx, req, &ures); err != nil {

@@ -76,7 +76,7 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 		defer cancel()
 
 		var ures response.UserResponse
-		if err := c.client.Call(r.Context(), c.client.NewRequest("onlyoffice:auth", "UserHandler.GetUser", zctx.Uid), &ures); err != nil {
+		if err := c.client.Call(r.Context(), c.client.NewRequest("onlyoffice:auth", "UserSelectHandler.GetUser", zctx.Uid), &ures); err != nil {
 			c.logger.Errorf("could not get user access info: %s", err.Error())
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)

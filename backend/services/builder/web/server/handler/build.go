@@ -113,7 +113,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 	c.logger.Debugf("processing a docs config: %s", payload.Filename)
 
 	config, err, _ := c.group.Do(payload.Uid, func() (interface{}, error) {
-		req := c.client.NewRequest("onlyoffice:auth", "UserHandler.GetUser", payload.Uid)
+		req := c.client.NewRequest("onlyoffice:auth", "UserSelectHandler.GetUser", payload.Uid)
 
 		var ures response.UserResponse
 		if err := c.client.Call(ctx, req, &ures); err != nil {

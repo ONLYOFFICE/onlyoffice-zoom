@@ -28,7 +28,7 @@ func TestSelectCaching(t *testing.T) {
 	service := service.NewUserService(log.NewDefaultLogger(), adapter, mockEncryptor{})
 	zm := client.NewZoomClient("clientID", "clientSecret")
 
-	sel := NewUserHandler(service, nil, zm, log.NewEmptyLogger())
+	sel := NewUserSelectHandler(service, nil, zm, log.NewEmptyLogger())
 
 	service.CreateUser(context.Background(), domain.UserAccess{
 		ID:           "mock",

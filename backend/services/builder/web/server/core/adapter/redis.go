@@ -107,7 +107,7 @@ func NewRedisSessionAdapter(opts ...Option) (port.SessionServiceAdapter, error) 
 		logger:              options.Logger,
 	}
 
-	go adapter.loadData()
+	// go adapter.loadData()
 	go adapter.subscribePersist()
 	go adapter.subscribeRemove()
 

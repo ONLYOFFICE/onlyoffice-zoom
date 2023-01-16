@@ -99,14 +99,16 @@ func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 
 		c.logger.Debugf("got zoom user with id: %s", user.ID)
 
-		if err := c.client.Publish(r.Context(), client.NewMessage("insert-auth", response.UserResponse{
+		req := c.client.NewRequest("onlyoffice:auth", "UserInsertHandler.InsertUser", response.UserResponse{
 			ID:           user.ID,
 			AccessToken:  token.AccessToken,
 			RefreshToken: token.RefreshToken,
 			TokenType:    token.TokenType,
 			Scope:        token.Scope,
 			ExpiresAt:    time.Now().Local().Add(time.Second * time.Duration(token.ExpiresIn-700)).UnixMilli(),
-		})); err != nil {
+		})
+
+		if err := c.client.Call(r.Context(), req, nil); err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			c.logger.Errorf("insert user error: %s", err.Error())
 			return

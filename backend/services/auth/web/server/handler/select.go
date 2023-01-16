@@ -15,7 +15,7 @@ import (
 
 var group singleflight.Group
 
-type UserHandler struct {
+type UserSelectHandler struct {
 	service port.UserAccessService
 	client  client.Client
 	zoomAPI zclient.ZoomAuth
@@ -23,13 +23,13 @@ type UserHandler struct {
 }
 
 // TODO: Distributed cache
-func NewUserHandler(
+func NewUserSelectHandler(
 	service port.UserAccessService,
 	client client.Client,
 	zoomAPI zclient.ZoomAuth,
 	logger log.Logger,
-) UserHandler {
-	return UserHandler{
+) UserSelectHandler {
+	return UserSelectHandler{
 		service: service,
 		client:  client,
 		zoomAPI: zoomAPI,
@@ -37,7 +37,7 @@ func NewUserHandler(
 	}
 }
 
-func (u UserHandler) GetUser(ctx context.Context, uid *string, res *domain.UserAccess) error {
+func (u UserSelectHandler) GetUser(ctx context.Context, uid *string, res *domain.UserAccess) error {
 	user, err, _ := group.Do(*uid, func() (interface{}, error) {
 		user, err := u.service.GetUser(ctx, *uid)
 		if err != nil {
