@@ -7,6 +7,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/builder/web/server/core/port"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/builder/web/server/core/service"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/builder/web/server/handler"
+	"github.com/ONLYOFFICE/zoom-onlyoffice/services/builder/web/server/message"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/client"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/crypto"
 	mclient "go-micro.dev/v4/client"
@@ -50,7 +51,18 @@ func NewConfigRPCServer(opts ...Option) rpc.RPCEngine {
 }
 
 func (a ConfigRPCServer) BuildMessageHandlers() []rpc.RPCMessageHandler {
-	return nil
+	return []rpc.RPCMessageHandler{
+		{
+			Topic:   "remove-session",
+			Queue:   "zoom-builder",
+			Handler: message.BuildRemoveSessionMessageHandler(a.logger, a.service).GetHandler(),
+		},
+		{
+			Topic:   "remove-owner-session",
+			Queue:   "zoom-builder",
+			Handler: message.BuildOwnerRemoveSessionMessageHandler(a.logger, a.service).GetHandler(),
+		},
+	}
 }
 
 func (a ConfigRPCServer) BuildHandlers(c mclient.Client) []interface{} {

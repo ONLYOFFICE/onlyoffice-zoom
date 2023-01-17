@@ -1,7 +1,6 @@
 package adapter
 
 import (
-	"crypto/tls"
 	"strings"
 
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
@@ -15,7 +14,6 @@ type Options struct {
 	RedisUsername  string
 	RedisPassword  string
 	BufferSize     int
-	TLSConfig      *tls.Config
 	Logger         log.Logger
 }
 
@@ -56,14 +54,6 @@ func WithBufferSize(val int) Option {
 	return func(o *Options) {
 		if val > 0 {
 			o.BufferSize = val
-		}
-	}
-}
-
-func WithTLSConfig(val *tls.Config) Option {
-	return func(o *Options) {
-		if val != nil {
-			o.TLSConfig = val
 		}
 	}
 }
