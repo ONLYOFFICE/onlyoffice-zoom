@@ -187,16 +187,13 @@ func (c apiController) BuildDeleteSession() http.HandlerFunc {
 		}
 
 		if zctx.Mid != "" {
-			req := c.client.NewRequest("onlyoffice:builder", "SessionHandler.OwnerRemoveSession", request.OwnerRemoveSessionRequest{
-				Mid: zctx.Mid,
-				Uid: zctx.Uid,
-			})
-			var resp interface{}
-
 			rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
 			defer cancel()
 
-			if err := c.client.Call(rctx, req, &resp); err != nil {
+			if err := c.client.Publish(rctx, client.NewMessage("remove-owner-session", request.OwnerRemoveSessionRequest{
+				Mid: zctx.Mid,
+				Uid: zctx.Uid,
+			})); err != nil {
 				c.logger.Errorf("could not build remove owner session: %s", err.Error())
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 					rw.WriteHeader(http.StatusRequestTimeout)
