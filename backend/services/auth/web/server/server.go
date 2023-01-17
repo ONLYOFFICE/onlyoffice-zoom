@@ -19,23 +19,19 @@ type AuthRPCServer struct {
 	logger  log.Logger
 }
 
-func NewAuthRPCServer(
-	logger log.Logger,
-	persistenceURL,
-	clientID,
-	clientSecret string,
-) rpc.RPCEngine {
-	adptr := adapter.NewMemoryUserAdapter()
+func NewAuthRPCServer(opts ...Option) rpc.RPCEngine {
+	options := newOptions(opts...)
 
-	if persistenceURL != "" {
-		adptr = adapter.NewMongoUserAdapter(persistenceURL)
+	adptr := adapter.NewMemoryUserAdapter()
+	if options.PersistenceURL != "" {
+		adptr = adapter.NewMongoUserAdapter(options.PersistenceURL)
 	}
 
-	service := service.NewUserService(logger, adptr, crypto.NewAesEncryptor([]byte(clientSecret)))
+	service := service.NewUserService(options.Logger, adptr, crypto.NewAesEncryptor([]byte(options.ClientSecret)))
 	return AuthRPCServer{
 		service: service,
-		zoomAPI: client.NewZoomClient(clientID, clientSecret),
-		logger:  logger,
+		zoomAPI: client.NewZoomClient(options.ClientID, options.ClientSecret),
+		logger:  options.Logger,
 	}
 }
 
@@ -57,6 +53,5 @@ func (a AuthRPCServer) BuildMessageHandlers() []rpc.RPCMessageHandler {
 func (a AuthRPCServer) BuildHandlers(client mclient.Client) []interface{} {
 	return []interface{}{
 		handler.NewUserSelectHandler(a.service, client, a.zoomAPI, a.logger),
-		handler.NewUserInsertHandler(a.service, a.logger),
 	}
 }

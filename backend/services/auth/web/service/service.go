@@ -26,8 +26,10 @@ func NewService(opts ...Option) (*rpc.Service, error) {
 		rpc.WithCircuitBreakerMaxConcurrent(options.Config.Resilience.CircuitBreaker.MaxConcurrent),
 		rpc.WithCircuitBreakerErrorPercentThreshold(options.Config.Resilience.CircuitBreaker.ErrorPercentThreshold),
 		rpc.WithRPC(server.NewAuthRPCServer(
-			options.Logger, options.Persistence.Url,
-			options.Zoom.ClientID, options.Zoom.ClientSecret,
+			server.WithClientID(options.Zoom.ClientID),
+			server.WithClientSecret(options.Zoom.ClientSecret),
+			server.WithPersistenceURL(options.Persistence.Url),
+			server.WithLogger(options.Logger),
 		)),
 		rpc.WithLogger(options.Logger),
 		rpc.WithTracer(trace.NewOptions(
@@ -40,7 +42,10 @@ func NewService(opts ...Option) (*rpc.Service, error) {
 		rpc.WithBrokerOptions(messaging.NewOptions(
 			messaging.WithAddrs(options.Broker.Addrs...),
 			messaging.WithBrokerType(messaging.BrokerType(options.Broker.Type)),
-			messaging.WithContext(options.Context),
+			messaging.WithDisableAutoAck(options.Broker.DisableAutoAck),
+			messaging.WithDurable(options.Broker.Durable),
+			messaging.WithRequeueOnError(options.Broker.RequeueOnError),
+			messaging.WithAckOnSuccess(options.Broker.AckOnSuccess),
 		)),
 		rpc.WithRegistryOptions(registry.Options{
 			Addresses:    options.Registry.Addresses,
