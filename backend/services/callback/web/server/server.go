@@ -69,7 +69,9 @@ func (s CallbackService) NewHandler(client client.Client) interface {
 // InitializeServer sets all injected dependencies.
 func (s *CallbackService) InitializeServer(c client.Client) *chi.Mux {
 	s.client = c
-	s.worker.JobWithOptions("callback-upload", work.JobOptions{MaxFails: 3}, sworker.NewCallbackWorker(c, s.logger).UploadFile)
+	s.worker.JobWithOptions("callback-upload", work.JobOptions{
+		MaxFails: 3, SkipDead: false,
+	}, sworker.NewCallbackWorker(c, s.logger).UploadFile)
 	s.InitializeRoutes()
 	s.worker.Start()
 	return s.mux
