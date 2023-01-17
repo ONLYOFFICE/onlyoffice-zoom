@@ -1,9 +1,5 @@
 package messaging
 
-import (
-	"context"
-)
-
 type BrokerType int
 
 var (
@@ -16,15 +12,21 @@ type Option func(*Options)
 
 // Options defines the available options.
 type Options struct {
-	BrokerType BrokerType
-	Addrs      []string
-	Context    context.Context
+	BrokerType     BrokerType
+	Addrs          []string
+	DisableAutoAck bool
+	Durable        bool
+	AckOnSuccess   bool
+	RequeueOnError bool
 }
 
 // NewOptions initializes the options.
 func NewOptions(opts ...Option) Options {
 	opt := Options{
-		Context: context.Background(),
+		DisableAutoAck: false,
+		Durable:        false,
+		AckOnSuccess:   true,
+		RequeueOnError: false,
 	}
 
 	for _, o := range opts {
@@ -50,11 +52,26 @@ func WithAddrs(val ...string) Option {
 	}
 }
 
-// WithContext sets broker context
-func WithContext(val context.Context) Option {
+func WithDisableAutoAck(val bool) Option {
 	return func(o *Options) {
-		if val != nil {
-			o.Context = val
-		}
+		o.DisableAutoAck = val
+	}
+}
+
+func WithDurable(val bool) Option {
+	return func(o *Options) {
+		o.Durable = val
+	}
+}
+
+func WithAckOnSuccess(val bool) Option {
+	return func(o *Options) {
+		o.AckOnSuccess = val
+	}
+}
+
+func WithRequeueOnError(val bool) Option {
+	return func(o *Options) {
+		o.RequeueOnError = val
 	}
 }

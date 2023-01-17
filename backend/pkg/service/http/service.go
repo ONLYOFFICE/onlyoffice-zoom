@@ -45,11 +45,14 @@ func NewService(opts ...Option) Service {
 		registry.WithCacheTTL(options.RegistryOptions.CacheTTL),
 	)
 
-	broker := messaging.NewBroker(
+	broker, _ := messaging.NewBroker(
 		registry,
-		messaging.WithBrokerType(options.BrokerOptions.BrokerType),
 		messaging.WithAddrs(options.BrokerOptions.Addrs...),
-		messaging.WithContext(options.Context),
+		messaging.WithBrokerType(options.BrokerOptions.BrokerType),
+		messaging.WithDisableAutoAck(options.BrokerOptions.DisableAutoAck),
+		messaging.WithDurable(options.BrokerOptions.Durable),
+		messaging.WithRequeueOnError(options.BrokerOptions.RequeueOnError),
+		messaging.WithAckOnSuccess(options.BrokerOptions.AckOnSuccess),
 	)
 
 	if err = broker.Init(); err != nil {

@@ -45,11 +45,14 @@ func NewService(opts ...Option) Service {
 		registry.WithCacheTTL(options.RegistryOptions.CacheTTL),
 	)
 
-	broker := messaging.NewBroker(
+	broker, subOpts := messaging.NewBroker(
 		registry,
-		messaging.WithBrokerType(options.BrokerOptions.BrokerType),
 		messaging.WithAddrs(options.BrokerOptions.Addrs...),
-		messaging.WithContext(options.Context),
+		messaging.WithBrokerType(options.BrokerOptions.BrokerType),
+		messaging.WithDisableAutoAck(options.BrokerOptions.DisableAutoAck),
+		messaging.WithDurable(options.BrokerOptions.Durable),
+		messaging.WithRequeueOnError(options.BrokerOptions.RequeueOnError),
+		messaging.WithAckOnSuccess(options.BrokerOptions.AckOnSuccess),
 	)
 
 	if err = broker.Init(); err != nil {
@@ -128,12 +131,12 @@ func NewService(opts ...Option) Service {
 			if entry.Handler != nil && entry.Topic != "" {
 				if entry.Queue != "" {
 					if err := micro.RegisterSubscriber(
-						entry.Topic, service.Server(), entry.Handler, server.SubscriberQueue(entry.Queue),
+						entry.Topic, service.Server(), entry.Handler, server.SubscriberContext(subOpts.Context), server.SubscriberQueue(entry.Queue),
 					); err != nil {
 						log.Fatalf("could not register a new subscriber with topic %s. Reason: %s", entry.Topic, err.Error())
 					}
 				} else {
-					if err := micro.RegisterSubscriber(entry.Topic, service.Server(), entry.Handler); err != nil {
+					if err := micro.RegisterSubscriber(entry.Topic, service.Server(), entry.Handler, server.SubscriberContext(subOpts.Context)); err != nil {
 						log.Fatalf("could not register a new subscriber with topic %s. Reason: %s", entry.Topic, err.Error())
 					}
 				}
