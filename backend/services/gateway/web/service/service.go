@@ -52,7 +52,10 @@ func NewService(opts ...Option) (*http.Service, error) {
 		http.WithBrokerOptions(messaging.NewOptions(
 			messaging.WithAddrs(options.Broker.Addrs...),
 			messaging.WithBrokerType(messaging.BrokerType(options.Broker.Type)),
-			messaging.WithContext(options.Context),
+			messaging.WithDisableAutoAck(options.Broker.DisableAutoAck),
+			messaging.WithDurable(options.Broker.Durable),
+			messaging.WithRequeueOnError(options.Broker.RequeueOnError),
+			messaging.WithAckOnSuccess(options.Broker.AckOnSuccess),
 		)),
 		http.WithRegistryOptions(registry.Options{
 			Addresses:    options.Registry.Addresses,
