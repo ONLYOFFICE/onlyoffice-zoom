@@ -40,14 +40,15 @@ func NewCallbackController(
 	}
 }
 
-func (c callbackController) removeSession(ctx context.Context, mid string) error {
-	req := c.client.NewRequest("onlyoffice:builder", "SessionHandler.RemoveSession", mid)
-	var resp interface{}
+func (c callbackController) getSessionOwner(ctx context.Context, mid string) (string, error) {
+	req := c.client.NewRequest("onlyoffice:builder", "SessionHandler.GetSessionOwner", mid)
+	var resp string
 	if err := c.client.Call(ctx, req, &resp); err != nil {
-		c.logger.Errorf("could not remove onlyoffice session: %s", err.Error())
-		return err
+		c.logger.Errorf("could not get session owner: %s", err.Error())
+		return "", err
 	}
-	return nil
+
+	return resp, nil
 }
 
 func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) http.HandlerFunc {
@@ -94,11 +95,12 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 		if body.Status == 4 {
 			mid := strings.TrimSpace(r.URL.Query().Get("mid"))
 			if mid != "" {
-				// TODO: Worker
 				rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
 				defer cancel()
-				if err := c.removeSession(rctx, mid); err != nil {
+
+				if err := c.client.Publish(rctx, client.NewMessage("remove-session", mid)); err != nil {
 					rw.WriteHeader(http.StatusInternalServerError)
+					c.logger.Errorf("remove session error: %s", err.Error())
 					rw.Write(response.CallbackResponse{
 						Error: 1,
 					}.ToJSON())
@@ -124,7 +126,22 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 			ctx, cancel := context.WithTimeout(r.Context(), 7*time.Second)
 			defer cancel()
 
-			if body.Users[0] != "" {
+			mid := strings.TrimSpace(r.URL.Query().Get("mid"))
+			usr := body.Users[0]
+
+			if mid != "" {
+				var err error
+				if usr, err = c.getSessionOwner(ctx, mid); err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					c.logger.Errorf("could not extract meeting owner for %s", body.Key)
+					rw.Write(response.CallbackResponse{
+						Error: 1,
+					}.ToJSON())
+					return
+				}
+			}
+
+			if usr != "" {
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
@@ -135,7 +152,7 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 					}
 
 					if _, err := enqueuer.Enqueue("callback-upload", map[string]interface{}{
-						"uid":      body.Users[0],
+						"uid":      usr,
 						"filename": filename,
 						"url":      body.URL,
 					}); err != nil {
@@ -146,12 +163,11 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 				}()
 			}
 
-			mid := strings.TrimSpace(r.URL.Query().Get("mid"))
 			if mid != "" {
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
-					if err := c.removeSession(ctx, mid); err != nil {
+					if err := c.client.Publish(ctx, client.NewMessage("remove-session", mid)); err != nil {
 						errChan <- err
 					}
 				}()

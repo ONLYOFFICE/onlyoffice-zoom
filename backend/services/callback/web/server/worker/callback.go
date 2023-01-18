@@ -2,7 +2,7 @@ package worker
 
 import (
 	"context"
-	"io"
+	"strconv"
 	"sync"
 	"time"
 
@@ -11,6 +11,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/response"
 	"github.com/gocraft/work"
 	"go-micro.dev/v4/client"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 )
 
@@ -35,10 +36,7 @@ func NewCallbackWorker(client client.Client, logger log.Logger) callbackWorker {
 }
 
 func (c callbackWorker) UploadFile(job *work.Job) error {
-	uid, filename, url := job.ArgString("uid"), job.ArgString("filename"), job.ArgString("url")
-
-	c.logger.Debugf("got a new file %s upload job (%s)", filename, uid)
-
+	// TODO: Pass timeout from yml(env) config / calculate timeout based on file size
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -46,51 +44,51 @@ func (c callbackWorker) UploadFile(job *work.Job) error {
 	tctx, span := tracer.Start(ctx, "upload")
 	defer span.End()
 
-	errorsChan := make(chan error, 2)
-	fileChan := make(chan io.Reader)
-	userChan := make(chan response.UserResponse)
-	defer close(errorsChan)
-	defer close(fileChan)
-	defer close(userChan)
+	uid, filename, url := job.ArgString("uid"), job.ArgString("filename"), job.ArgString("url")
+	c.logger.Debugf("got a new file %s upload job (%s)", filename, uid)
 
 	var wg sync.WaitGroup
+	userChan := make(chan response.UserResponse)
+	sizeChan := make(chan int64)
+	errChan := make(chan error, 2)
 
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		file, err := c.zoomFilestore.GetFile(tctx, url)
-		if err != nil {
-			errorsChan <- err
-			return
-		}
-		fileChan <- file
-	}()
 
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
 		req := c.client.NewRequest("onlyoffice:auth", "UserSelectHandler.GetUser", uid)
-
 		var ures response.UserResponse
 		if err := c.client.Call(tctx, req, &ures); err != nil {
-			errorsChan <- err
+			errChan <- err
 			return
 		}
 
 		userChan <- ures
 	}()
 
+	go func() {
+		wg.Add(1)
+		defer wg.Wait()
+		headResp, _ := otelhttp.Head(tctx, url)
+		size, err := strconv.ParseInt(headResp.Header.Get("Content-Length"), 10, 64)
+		if err != nil {
+			errChan <- err
+			return
+		}
+
+		sizeChan <- size
+	}()
+
 	wg.Wait()
 
 	select {
-	case err := <-errorsChan:
-		c.logger.Debugf("could not execute a file %s upload operation (%s). Reason: %s", filename, uid, err.Error())
+	case err := <-errChan:
 		return err
 	default:
 	}
 
 	ures := <-userChan
-	if err := c.zoomFilestore.UploadFile(tctx, ures.AccessToken, ures.ID, filename, <-fileChan); err != nil {
+	if err := c.zoomFilestore.UploadFile(tctx, url, ures.AccessToken, ures.ID, filename, <-sizeChan); err != nil {
 		c.logger.Debugf("could not upload an onlyoffice file to zoom: %s", err.Error())
 		return err
 	}

@@ -57,6 +57,10 @@ func (c *Config) Validate() error {
 		return err
 	}
 
+	if err := c.Worker.Validate(); err != nil {
+		return err
+	}
+
 	if err := c.Registry.Validate(); err != nil {
 		return err
 	}
