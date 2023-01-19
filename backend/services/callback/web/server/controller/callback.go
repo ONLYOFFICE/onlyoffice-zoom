@@ -53,6 +53,7 @@ func (c callbackController) getSessionOwner(ctx context.Context, mid string) (st
 
 func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
+		mid := strings.TrimSpace(r.URL.Query().Get("mid"))
 		rw.Header().Set("Content-Type", "application/json")
 
 		var body request.CallbackRequest
@@ -92,8 +93,23 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 			return
 		}
 
+		if body.Status == 1 && len(body.Users) == 1 && mid != "" {
+			rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
+			defer cancel()
+
+			req := c.client.NewRequest("onlyoffice:builder", "SessionHandler.RefreshSession", mid)
+			var res interface{}
+			if err := c.client.Call(rctx, req, &res); err != nil {
+				c.logger.Errorf("could not refresh initial session with key %s", body.Key)
+				rw.WriteHeader(http.StatusBadRequest)
+				rw.Write(response.CallbackResponse{
+					Error: 1,
+				}.ToJSON())
+				return
+			}
+		}
+
 		if body.Status == 4 {
-			mid := strings.TrimSpace(r.URL.Query().Get("mid"))
 			if mid != "" {
 				rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
 				defer cancel()

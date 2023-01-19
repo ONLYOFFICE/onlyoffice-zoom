@@ -56,3 +56,39 @@ func (s SessionHandler) GetSessionOwner(ctx context.Context, mid *string, respon
 
 	return nil
 }
+
+func (s SessionHandler) RefreshSession(ctx context.Context, mid *string, response *bool) error {
+	*mid = strings.TrimSpace(*mid)
+
+	if *mid == "" {
+		s.logger.Error("invalid mid to fetch a session")
+		return ErrEmptyIdValue
+	}
+
+	if _, err, _ := s.group.Do(*mid, func() (interface{}, error) {
+		s.logger.Debugf("trying to find a session for mid %s", *mid)
+		session, err := s.service.GetSession(ctx, *mid)
+		if err != nil {
+			s.logger.Errorf("could not find any session for mid %s to refresh it. Error: %s", *mid, err.Error())
+			return nil, err
+		}
+
+		if session.Initial {
+			s.logger.Debugf("refreshing initial session with key %s", session.DocKey)
+			_, err = s.service.CreateSession(ctx, *mid, domain.Session{
+				Owner:    session.Owner,
+				Filename: session.Filename,
+				FileURL:  session.FileURL,
+				DocKey:   session.DocKey,
+			})
+
+			return nil, err
+		}
+
+		return nil, nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}

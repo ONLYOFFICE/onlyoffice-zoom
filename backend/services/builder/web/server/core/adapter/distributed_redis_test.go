@@ -34,18 +34,18 @@ func TestRedisAdapter(t *testing.T) {
 	t.Run("save a new session with timeout", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 0*time.Second)
 		defer cancel()
-		_, err := adapter.InsertSession(ctx, "mock-id", session)
+		_, err := adapter.InsertSession(ctx, "mock-id", session, 1*time.Hour)
 		assert.Error(t, err)
 	})
 
 	t.Run("save a new session", func(t *testing.T) {
-		s, err := adapter.InsertSession(context.Background(), "mock-id", session)
+		s, err := adapter.InsertSession(context.Background(), "mock-id", session, 1*time.Hour)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, s)
 	})
 
 	t.Run("save an existing session", func(t *testing.T) {
-		s, err := adapter.InsertSession(context.Background(), "mock-id", session)
+		s, err := adapter.InsertSession(context.Background(), "mock-id", session, 1*time.Hour)
 		assert.Error(t, err)
 		assert.NotEmpty(t, s)
 	})

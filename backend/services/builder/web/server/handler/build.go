@@ -180,6 +180,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 				Filename: payload.Filename,
 				FileURL:  payload.FileURL,
 				DocKey:   uuid.NewString(),
+				Initial:  true,
 			})
 
 			if err != nil {

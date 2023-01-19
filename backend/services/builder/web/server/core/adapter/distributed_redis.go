@@ -218,7 +218,7 @@ func (s distributedRedisSessionAdapter) broadcastAndRemove(key string) error {
 	return s.redisClient.Del(ctx, key).Err()
 }
 
-func (s distributedRedisSessionAdapter) InsertSession(ctx context.Context, mid string, session domain.Session) (domain.Session, error) {
+func (s distributedRedisSessionAdapter) InsertSession(ctx context.Context, mid string, session domain.Session, expiresIn time.Duration) (domain.Session, error) {
 	if sess, err := s.SelectSessionByMettingID(ctx, mid); err == nil {
 		return sess, ErrSessionAlreadyExists
 	} else if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {

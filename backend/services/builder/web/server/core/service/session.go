@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strings"
+	"time"
 
 	plog "github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/builder/web/server/core/domain"
@@ -39,8 +40,13 @@ func (s sessionService) CreateSession(ctx context.Context, mid string, session d
 		return session, err
 	}
 
+	exp := 12 * time.Hour
+	if session.Initial {
+		exp = 45 * time.Second
+	}
+
 	s.logger.Debugf("session %s is valid", session.DocKey)
-	return s.adapter.InsertSession(ctx, mid, session)
+	return s.adapter.InsertSession(ctx, mid, session, exp)
 }
 
 func (s sessionService) GetSession(ctx context.Context, mid string) (domain.Session, error) {

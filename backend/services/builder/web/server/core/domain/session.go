@@ -10,6 +10,7 @@ type Session struct {
 	Filename string `json:"file_name"`
 	FileURL  string `json:"file_url"`
 	DocKey   string `json:"doc_key"`
+	Initial  bool   `json:"initial"`
 }
 
 func (u *Session) Validate() error {

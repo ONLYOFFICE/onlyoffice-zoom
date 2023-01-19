@@ -3,7 +3,6 @@ package adapter
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
@@ -82,7 +81,7 @@ func NewRedisSessionAdapter(opts ...Option) (port.SessionServiceAdapter, error) 
 	return adapter, nil
 }
 
-func (s redisSessionAdapter) broadcastAndPersist(key, value string) error {
+func (s redisSessionAdapter) broadcastAndPersist(key, value string, expiresIn time.Duration) error {
 	if err := s.redisLock.Lock(); err != nil {
 		return err
 	}
@@ -91,7 +90,7 @@ func (s redisSessionAdapter) broadcastAndPersist(key, value string) error {
 	defer s.redisLock.Unlock()
 	defer cancel()
 
-	if err := s.redisClient.Set(ctx, key, value, 24*time.Hour).Err(); err != nil {
+	if err := s.redisClient.Set(ctx, key, value, expiresIn).Err(); err != nil {
 		return err
 	}
 
@@ -110,19 +109,13 @@ func (s redisSessionAdapter) broadcastAndRemove(key string) error {
 	return s.redisClient.Del(ctx, key).Err()
 }
 
-func (s redisSessionAdapter) InsertSession(ctx context.Context, mid string, session domain.Session) (domain.Session, error) {
-	if sess, err := s.SelectSessionByMettingID(ctx, mid); err == nil {
-		return sess, ErrSessionAlreadyExists
-	} else if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return session, err
-	}
-
+func (s redisSessionAdapter) InsertSession(ctx context.Context, mid string, session domain.Session, expiresAt time.Duration) (domain.Session, error) {
 	buf, err := json.Marshal(session)
 	if err != nil {
 		return session, err
 	}
 
-	if err := s.broadcastAndPersist(mid, string(buf)); err != nil {
+	if err := s.broadcastAndPersist(mid, string(buf), expiresAt); err != nil {
 		return session, err
 	}
 

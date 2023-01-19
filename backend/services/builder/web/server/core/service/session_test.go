@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/builder/web/server/core/domain"
@@ -19,7 +20,7 @@ var session = domain.Session{
 	DocKey:   "doc-key",
 }
 
-func (m mockAdapter) InsertSession(ctx context.Context, mid string, session domain.Session) (domain.Session, error) {
+func (m mockAdapter) InsertSession(ctx context.Context, mid string, session domain.Session, expiresIn time.Duration) (domain.Session, error) {
 	return session, nil
 }
 
