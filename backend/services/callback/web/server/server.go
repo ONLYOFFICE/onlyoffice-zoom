@@ -70,7 +70,7 @@ func (s CallbackService) NewHandler(client client.Client) interface {
 func (s *CallbackService) InitializeServer(c client.Client) *chi.Mux {
 	s.client = c
 	s.worker.JobWithOptions("callback-upload", work.JobOptions{
-		MaxFails: 3, SkipDead: false,
+		MaxFails: 3, SkipDead: true,
 	}, sworker.NewCallbackWorker(c, s.logger).UploadFile)
 	s.InitializeRoutes()
 	s.worker.Start()

@@ -69,6 +69,7 @@ func (c callbackWorker) UploadFile(job *work.Job) error {
 	go func() {
 		wg.Add(1)
 		defer wg.Wait()
+
 		headResp, _ := otelhttp.Head(tctx, url)
 		size, err := strconv.ParseInt(headResp.Header.Get("Content-Length"), 10, 64)
 		if err != nil {
