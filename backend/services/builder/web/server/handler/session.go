@@ -44,11 +44,15 @@ func (s SessionHandler) GetSessionOwner(ctx context.Context, mid *string, respon
 		return session, nil
 	})
 
+	if err != nil {
+		return err
+	}
+
 	if sess, ok := session.(domain.Session); ok {
 		s.logger.Debugf("session for mid %s has been found", *mid)
 		*response = sess.Owner
 		return nil
 	}
 
-	return err
+	return nil
 }
