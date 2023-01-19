@@ -12,7 +12,9 @@ server:
     origins: ["https://backend", "https://frontend"]
 onlyoffice:
   doc_secret: "onlyoffice_document_secret"
-  max_size: 2100000 #MBs
+callback:
+  max_size: 210000000000
+  upload_timeout: 20
 repl:
   version: 0
   address: ":3132"

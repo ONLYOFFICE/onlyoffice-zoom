@@ -15,6 +15,7 @@ type Option func(*Options)
 type Options struct {
 	Logger     log.Logger
 	Config     config.HttpServer
+	Callback   shared.CallbackConfig
 	Onlyoffice shared.OnlyofficeConfig
 	Tracer     config.Tracer
 	Broker     config.Broker
@@ -66,6 +67,13 @@ func WithConfig(val config.HttpServer) Option {
 func WithOnlyoffice(val shared.OnlyofficeConfig) Option {
 	return func(o *Options) {
 		o.Onlyoffice = val
+	}
+}
+
+// WithCallback sets callback handler's config.
+func WithCallback(val shared.CallbackConfig) Option {
+	return func(o *Options) {
+		o.Callback = val
 	}
 }
 

@@ -20,6 +20,7 @@ type workerContext struct{}
 type callbackWorker struct {
 	client        client.Client
 	zoomFilestore zclient.ZoomFilestore
+	uploadTimeout int
 	logger        log.Logger
 }
 
@@ -27,17 +28,17 @@ func NewWorkerContext() workerContext {
 	return workerContext{}
 }
 
-func NewCallbackWorker(client client.Client, logger log.Logger) callbackWorker {
+func NewCallbackWorker(client client.Client, uploadTimeout int, logger log.Logger) callbackWorker {
 	return callbackWorker{
 		client:        client,
-		logger:        logger,
 		zoomFilestore: zclient.NewZoomFilestoreClient(),
+		uploadTimeout: uploadTimeout,
+		logger:        logger,
 	}
 }
 
 func (c callbackWorker) UploadFile(job *work.Job) error {
-	// TODO: Pass timeout from yml(env) config / calculate timeout based on file size
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.uploadTimeout)*time.Second)
 	defer cancel()
 
 	tracer := otel.GetTracerProvider().Tracer("zoom-onlyoffice/pool")

@@ -16,13 +16,14 @@ import (
 )
 
 type CallbackService struct {
-	mux        *chi.Mux
-	client     client.Client
-	logger     log.Logger
-	jwtManager crypto.JwtManager
-	worker     *work.WorkerPool
-	enqueuer   *work.Enqueuer
-	maxSize    int64
+	mux           *chi.Mux
+	client        client.Client
+	logger        log.Logger
+	jwtManager    crypto.JwtManager
+	worker        *work.WorkerPool
+	enqueuer      *work.Enqueuer
+	maxSize       int64
+	uploadTimeout int
 }
 
 // ApplyMiddleware useed to apply http server middlewares.
@@ -48,12 +49,13 @@ func NewServer(opts ...Option) CallbackService {
 	jwtManager, _ := crypto.NewOnlyofficeJwtManager(options.DocSecret)
 
 	service := CallbackService{
-		mux:        chi.NewRouter(),
-		logger:     options.Logger,
-		jwtManager: jwtManager,
-		worker:     worker.NewRedisWorker(sworker.NewWorkerContext(), wopts...),
-		enqueuer:   worker.NewRedisEnqueuer(wopts...),
-		maxSize:    options.MaxSize,
+		mux:           chi.NewRouter(),
+		logger:        options.Logger,
+		jwtManager:    jwtManager,
+		worker:        worker.NewRedisWorker(sworker.NewWorkerContext(), wopts...),
+		enqueuer:      worker.NewRedisEnqueuer(wopts...),
+		maxSize:       options.MaxSize,
+		uploadTimeout: options.UploadTimeout,
 	}
 
 	return service
@@ -71,7 +73,7 @@ func (s *CallbackService) InitializeServer(c client.Client) *chi.Mux {
 	s.client = c
 	s.worker.JobWithOptions("callback-upload", work.JobOptions{
 		MaxFails: 3, SkipDead: true,
-	}, sworker.NewCallbackWorker(c, s.logger).UploadFile)
+	}, sworker.NewCallbackWorker(c, s.uploadTimeout, s.logger).UploadFile)
 	s.InitializeRoutes()
 	s.worker.Start()
 	return s.mux

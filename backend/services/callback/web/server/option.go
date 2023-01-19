@@ -10,18 +10,20 @@ type Option func(*Options)
 
 // Options defines the set of available options
 type Options struct {
-	Logger    log.Logger
-	Worker    worker.Options
-	DocSecret string
-	MaxSize   int64
+	Logger        log.Logger
+	Worker        worker.Options
+	DocSecret     string
+	MaxSize       int64
+	UploadTimeout int
 }
 
 // newOptions initializes the options.
 func newOptions(opts ...Option) Options {
 	options := Options{
-		Logger:    log.NewDefaultLogger(),
-		DocSecret: "secret",
-		MaxSize:   2100000,
+		Logger:        log.NewDefaultLogger(),
+		DocSecret:     "secret",
+		MaxSize:       2100000,
+		UploadTimeout: 10,
 	}
 
 	for _, o := range opts {
@@ -57,5 +59,11 @@ func WithMaxSize(val int64) Option {
 func WithWorker(val worker.Options) Option {
 	return func(o *Options) {
 		o.Worker = val
+	}
+}
+
+func WithUploadTimeout(val int) Option {
+	return func(o *Options) {
+		o.UploadTimeout = val
 	}
 }

@@ -32,7 +32,8 @@ func NewService(opts ...Option) (*http.Service, error) {
 			server.NewServer(
 				server.WithLogger(options.Logger),
 				server.WithDocSecret(options.Onlyoffice.DocSecret),
-				server.WithMaxSize(options.Onlyoffice.MaxSize),
+				server.WithMaxSize(options.Callback.MaxSize),
+				server.WithUploadTimeout(options.Callback.UploadTimeout),
 				server.WithWorker(worker.NewOptions(
 					worker.WithMaxActive(options.Worker.MaxActive),
 					worker.WithMaxIdle(options.Worker.MaxIdle),

@@ -35,7 +35,6 @@ func (zc *ZoomConfig) Validate() error {
 type OnlyofficeConfig struct {
 	DocSecret   string `yaml:"doc_secret" env:"ONLYOFFICE_DOC_SECRET,overwrite"`
 	CallbackURL string `yaml:"callback_url" env:"ONLYOFFICE_CALLBACK_URL,overwrite"`
-	MaxSize     int64  `yaml:"max_size" env:"ONLYOFFICE_MAX_SIZE,overwrite"`
 }
 
 func (oc *OnlyofficeConfig) Validate() error {
@@ -45,6 +44,30 @@ func (oc *OnlyofficeConfig) Validate() error {
 		return &InvalidConfigurationParameterError{
 			Parameter: "DocSecret",
 			Reason:    "Should not be empty",
+		}
+	}
+
+	return nil
+}
+
+type CallbackConfig struct {
+	// TODO: uint
+	MaxSize       int64 `yaml:"max_size" env:"CALLBACK_MAX_SIZE,overwrite"`
+	UploadTimeout int   `yaml:"upload_timeout" env:"CALLBACK_UPLOAD_TIMEOUT,overwrite"`
+}
+
+func (c *CallbackConfig) Validate() error {
+	if c.MaxSize <= 0 {
+		return &InvalidConfigurationParameterError{
+			Parameter: "MaxSize",
+			Reason:    "Must be positive",
+		}
+	}
+
+	if c.UploadTimeout <= 0 {
+		return &InvalidConfigurationParameterError{
+			Parameter: "UploadTimeout",
+			Reason:    "Must be positive",
 		}
 	}
 

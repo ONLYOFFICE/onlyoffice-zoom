@@ -14,6 +14,7 @@ type Config struct {
 	Machine     string
 	Server      config.HttpServer       `yaml:"server"`
 	REPL        config.ReplServer       `yaml:"repl"`
+	Callback    shared.CallbackConfig   `yaml:"callback"`
 	Onlyoffice  shared.OnlyofficeConfig `yaml:"onlyoffice"`
 	Broker      config.Broker           `yaml:"broker"`
 	Registry    config.Registry         `yaml:"registry"`
@@ -46,6 +47,10 @@ func (c *Config) Validate() error {
 	}
 
 	if err := c.REPL.Validate(); err != nil {
+		return err
+	}
+
+	if err := c.Callback.Validate(); err != nil {
 		return err
 	}
 

@@ -73,8 +73,12 @@ func Server(config *config.Config) *cli.Command {
 				Usage: "sets onlyoffice document server jwt secret",
 			},
 			&cli.StringFlag{
-				Name:  "onlyoffice_max_size",
-				Usage: "sets onlyoffice document server max file size",
+				Name:  "callback_max_size",
+				Usage: "sets callback handler max file size",
+			},
+			&cli.StringFlag{
+				Name:  "callback_upload_timeout",
+				Usage: "sets callback file upload timeout",
 			},
 			&cli.IntFlag{
 				Name:  "broker_type",
@@ -171,7 +175,9 @@ func Server(config *config.Config) *cli.Command {
 				HTTP_CIRCUIT_ERROR_PERCENT    = c.Int("circuit_breaker_error_percent")
 
 				ONLYOFFICE_DOC_SECRET = c.String("onlyoffice_doc_secret")
-				ONLYOFFICE_MAX_SIZE   = c.String("onlyoffice_max_size")
+
+				CALLBACK_MAX_SIZE       = c.String("callback_max_size")
+				CALLBACK_UPLOAD_TIMEOUT = c.String("callback_upload_timeout")
 
 				REGISTRY_ADDRESSES = c.StringSlice("registry_addresses")
 				REGISTRY_TYPE      = c.Int("registry_type")
@@ -198,7 +204,8 @@ func Server(config *config.Config) *cli.Command {
 				REPL_DEBUG   = c.Bool("repl_debug")
 			)
 
-			config.Onlyoffice.MaxSize = 2100000
+			config.Callback.MaxSize = 2100000
+			config.Callback.UploadTimeout = 10
 			config.Worker.RedisDatabase = WORKER_DATABASE
 
 			if CONFIG_PATH != "" {
@@ -273,10 +280,17 @@ func Server(config *config.Config) *cli.Command {
 				config.Onlyoffice.DocSecret = ONLYOFFICE_DOC_SECRET
 			}
 
-			if ONLYOFFICE_MAX_SIZE != "" {
-				v, err := strconv.ParseInt(ONLYOFFICE_MAX_SIZE, 10, 0)
+			if CALLBACK_MAX_SIZE != "" {
+				v, err := strconv.ParseInt(CALLBACK_MAX_SIZE, 10, 0)
 				if err != nil {
-					config.Onlyoffice.MaxSize = v
+					config.Callback.MaxSize = v
+				}
+			}
+
+			if CALLBACK_UPLOAD_TIMEOUT != "" {
+				v, err := strconv.Atoi(CALLBACK_UPLOAD_TIMEOUT)
+				if err != nil {
+					config.Callback.UploadTimeout = v
 				}
 			}
 
@@ -404,6 +418,7 @@ func startGroup(config *config.Config) error {
 	{
 		server, err := service.NewService(
 			service.WithConfig(config.Server),
+			service.WithCallback(config.Callback),
 			service.WithOnlyoffice(config.Onlyoffice),
 			service.WithTracer(config.Tracer),
 			service.WithBroker(config.Broker),
