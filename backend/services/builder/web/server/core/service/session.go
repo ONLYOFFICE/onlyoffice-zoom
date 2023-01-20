@@ -42,7 +42,7 @@ func (s sessionService) CreateSession(ctx context.Context, mid string, session d
 
 	exp := 12 * time.Hour
 	if session.Initial {
-		exp = 45 * time.Second
+		exp = 30 * time.Second
 	}
 
 	s.logger.Debugf("session %s is valid", session.DocKey)
