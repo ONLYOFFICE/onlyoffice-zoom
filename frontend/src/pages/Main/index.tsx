@@ -1,41 +1,37 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-import { OnlyofficeBackground } from "@pages/Main/Background";
-import { OnlyofficeMainHeader } from "@pages/Main/Header";
-import { OnlyofficeButton } from "@components/button";
+import { OnlyofficeSpinner } from "@components/spinner";
+
+import { fetchFiles } from "@services/file";
+
+import { FilesPage } from "@pages/Files";
+import { InitialPage } from "@pages/Nofiles";
 
 export const MainPage: React.FC = () => {
-  const navigate = useNavigate();
+  const [initial, setInitial] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFiles()
+      .then((files) => setInitial(files.response.length < 1))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-      <div className="pt-5 large:pt-12 small:pt-4 xsmall:pt-2">
-        <OnlyofficeMainHeader
-          title="Welcome to ONLYOFFICE!"
-          subtitle="You may open and create a new document without registration"
-        />
-      </div>
-      <div className="flex justify-center items-center flex-col pt-10 pb-10 lg:mx-96 md:mx-40 sm:mx-20 xs:mx-0">
-        <div className="pb-5 w-full px-5 z-50">
-          <OnlyofficeButton
-            text="Create with ONLYOFFICE"
-            primary
-            fullWidth
-            onClick={() => navigate("/create")}
-          />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.04 }}
+      className="h-full overflow-hidden"
+    >
+      {loading && (
+        <div className="h-full w-full flex justify-center items-center">
+          <OnlyofficeSpinner />
         </div>
-        <div className="w-full px-5 z-50">
-          <OnlyofficeButton
-            text="My Zoom documents"
-            fullWidth
-            onClick={() => navigate("/files")}
-          />
-        </div>
-      </div>
-      <div className="absolute flex justify-center items-center bottom-[0%] w-screen lg:w-4/6 lg:mx-[16%]">
-        <OnlyofficeBackground />
-      </div>
+      )}
+      {!loading && initial && <InitialPage />}
+      {!loading && !initial && <FilesPage />}
     </motion.div>
   );
 };

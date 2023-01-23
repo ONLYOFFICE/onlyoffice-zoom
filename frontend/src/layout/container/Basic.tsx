@@ -11,7 +11,7 @@ export const OnlyofficeBasicLayoutContainer: React.FC<BasicLayoutProps> = ({
   onNavbarClick,
   children,
 }) => (
-  <div className="relative h-screen w-screen overflow-hidden scrollable:overflow-scroll">
+  <div className="relative h-[100%] w-screen overflow-hidden">
     <div className="h-12">
       <OnlyofficeNavbar onClick={onNavbarClick} />
     </div>

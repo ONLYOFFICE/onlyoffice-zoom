@@ -54,27 +54,51 @@ export const FilesPage: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative w-full max-w-[790px] h-full flex flex-col my-0 mx-auto"
+      className="relative w-full max-w-[790px] h-full flex flex-col my-0 mx-auto md:py-10 pt-10 pb-0"
     >
-      <div className="flex items-center mx-5 h-12 max-w-full truncate text-ellipsis">
-        <OnlyofficeTitle text="My Zoom documents" />
-      </div>
-      <div className="flex px-5 h-12">
-        <OnlyofficeSearchBar
-          placeholder="Search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+      <div className="w-full h-20 flex justify-center items-center px-5 pb-10">
+        <OnlyofficeButton
+          text="Create with ONLYOFFICE"
+          primary
+          fullWidth
+          onClick={() => navigate("/create")}
         />
       </div>
-      <div className="px-5 overflow-scroll h-[calc(100%-3rem-3rem-3rem)] md:justify-between">
-        {!isLoading && !!error && (
-          <OnlyofficeNoFile title="Could not find zoom files" />
-        )}
-        {!error &&
-          files?.map((file, index) => {
-            if (files.length === index + 1) {
+      <div className="table-shadow pb-10 h-[calc(100%-5rem)]">
+        <div className="flex items-center justify-center h-12 mx-5 max-w-full truncate text-ellipsis">
+          <OnlyofficeTitle text="My Zoom documents" />
+        </div>
+        <div className="flex h-12 px-5">
+          <OnlyofficeSearchBar
+            placeholder="Search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="px-5 overflow-scroll h-[calc(100%-3rem-1rem)] md:justify-between no-scrollbar">
+          {!isLoading && (!!error || files?.length === 0) && (
+            <OnlyofficeNoFile title="Could not find zoom files" />
+          )}
+          {!error &&
+            files &&
+            files.length > 0 &&
+            files?.map((file, index) => {
+              if (files.length === index + 1) {
+                return (
+                  <div key={file.file_id} ref={lastItem}>
+                    <OnlyofficeFile
+                      icon={getFileIcon(file.file_name)}
+                      name={file.file_name}
+                      time={new Date(file.timestamp).toLocaleString()}
+                      size={formatBytes(+file.file_size)}
+                      onClick={() => openFile(file)}
+                      supported={isFileSupported(file.file_name)}
+                    />
+                  </div>
+                );
+              }
               return (
-                <div key={file.file_id} ref={lastItem}>
+                <div key={file.file_id}>
                   <OnlyofficeFile
                     icon={getFileIcon(file.file_name)}
                     name={file.file_name}
@@ -85,40 +109,19 @@ export const FilesPage: React.FC = () => {
                   />
                 </div>
               );
-            }
-            return (
-              <div key={file.file_id}>
-                <OnlyofficeFile
-                  icon={getFileIcon(file.file_name)}
-                  name={file.file_name}
-                  time={new Date(file.timestamp).toLocaleString()}
-                  size={formatBytes(+file.file_size)}
-                  onClick={() => openFile(file)}
-                  supported={isFileSupported(file.file_name)}
-                />
-              </div>
-            );
-          })}
-        {(isLoading || isFetchingNextPage) && (
-          <div
-            className={`relative w-full ${
-              isLoading ? "h-full" : "h-fit"
-            } my-5 flex justify-center items-center`}
-          >
-            <OnlyofficeSpinner />
-          </div>
-        )}
-      </div>
-      <div className="relative h-16 px-5 py-2">
-        <OnlyofficeButton
-          text="Cancel"
-          fullWidth
-          primary
-          onClick={() => navigate("/")}
-        />
+            })}
+          {(isLoading || isFetchingNextPage) && (
+            <div
+              className={`relative w-full ${
+                isLoading ? "h-full" : "h-fit"
+              } my-5 flex justify-center items-center`}
+            >
+              <OnlyofficeSpinner />
+            </div>
+          )}
+        </div>
       </div>
     </motion.div>
   );
 };
-
 export default FilesPage;

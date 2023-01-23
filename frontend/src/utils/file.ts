@@ -94,6 +94,7 @@ export const getFileIcon = (filename: string) => {
   return notsupported;
 };
 
+// TODO: Set proper defaults
 export const getCreateFileUrl = (
   fileType: "docx" | "pptx" | "xlsx" | undefined
 ) => {

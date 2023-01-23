@@ -5,6 +5,11 @@
 *{
   box-sizing: border-box;
   transition: all .3s ease-in-out;
+  user-select: none;
+}
+
+.table-shadow {
+  box-shadow: 0 -5px 5px -5px rgb(231, 231, 231);
 }
 
 body {

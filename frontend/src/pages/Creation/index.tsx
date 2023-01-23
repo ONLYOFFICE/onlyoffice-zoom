@@ -15,16 +15,10 @@ import xls from "@assets/xls.svg";
 
 export const CreationPage: React.FC = () => {
   const navigate = useNavigate();
-  const [file, setFile] = useState("");
-  const [fileType, setFileType] = useState<
-    "docx" | "pptx" | "xlsx" | undefined
-  >(undefined);
+  const [file, setFile] = useState("New Document");
+  const [fileType, setFileType] = useState<"docx" | "pptx" | "xlsx">("docx");
 
   const handleChangeFile = (newType: "docx" | "pptx" | "xlsx") => {
-    if (newType === fileType) {
-      setFileType(undefined);
-      return;
-    }
     setFileType(newType);
   };
 
@@ -42,9 +36,11 @@ export const CreationPage: React.FC = () => {
           text="Title"
           value={file}
           onChange={(e) => setFile(e.target.value)}
+          errorText="Please fill out this field"
+          valid={file.length > 0}
         />
       </div>
-      <div className="grid md:grid-cols-3 sm:grid-cols-2 xxsmall:grid-cols-1 md:gap-4 sm:gap-2 xsmall:gap-1 justify-center items-center content-start w-full overflow-y-scroll h-[calc(100%-2rem-4rem)] md:h-[calc(100%-3rem-6rem-6rem)] px-5 md:px-0">
+      <div className="grid md:grid-cols-3 sm:grid-cols-2 xxsmall:grid-cols-1 md:gap-4 sm:gap-2 xsmall:gap-1 justify-center items-center content-start w-full overflow-y-scroll h-[calc(100%-2rem-4rem)] md:h-[calc(100%-3rem-6rem-6rem)] px-5 md:px-0 no-scroll">
         <div className="sm:flex sm:justify-center sm:items-center">
           <OnlyofficeTile
             icon={docx}
@@ -85,6 +81,15 @@ export const CreationPage: React.FC = () => {
                 encodeURI(file) || "sample"
               }.${fileType}`}&url=${getCreateFileUrl(fileType)}`
             );
+          }}
+        />
+      </div>
+      <div className="relative h-16 px-5 md:px-0">
+        <OnlyofficeButton
+          text="Back"
+          fullWidth
+          onClick={() => {
+            navigate("/");
           }}
         />
       </div>

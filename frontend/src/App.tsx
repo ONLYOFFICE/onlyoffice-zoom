@@ -14,7 +14,12 @@ function App() {
         zoomSdk.default
           .config({
             popoutSize: { width: 480, height: 360 },
-            capabilities: ["expandApp", "getAppContext", "openUrl"],
+            capabilities: [
+              "expandApp",
+              "getAppContext",
+              "openUrl",
+              "getRunningContext",
+            ],
           })
           .then(() => setZoom(true))
           .catch(() => setZoom(false))

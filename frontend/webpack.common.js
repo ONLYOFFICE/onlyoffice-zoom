@@ -1,6 +1,6 @@
 /* eslint-disable */
 const path = require("path");
-const Dotenv = require('dotenv-webpack');
+const Dotenv = require("dotenv-webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
@@ -27,8 +27,20 @@ module.exports = {
                 use: ["style-loader", "css-loader", "postcss-loader"],
             },
             {
-                test: /\.(png|svg|jpg|jpeg|gif|ico)$/i,
+                test: /\.(png|jpg|jpeg|gif|ico)$/i,
                 type: "asset/resource",
+            },
+            {
+                test: /\.svg$/,
+                use: [
+                    {
+                        loader: "svg-url-loader",
+                        options: {
+                            limit: 10240,
+                            iesafe: true,
+                        },
+                    },
+                ],
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf)$/i,

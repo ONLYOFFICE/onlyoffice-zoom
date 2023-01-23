@@ -13,7 +13,6 @@ import { OnlyofficeSpinner } from "@components/spinner";
 
 import { OnlyofficeBasicLayoutContainer } from "@layouts/container";
 
-const FilesPage = React.lazy(() => import("@pages/Files"));
 const MainPage = React.lazy(() => import("@pages/Main"));
 const CreationPage = React.lazy(() => import("@pages/Creation"));
 const OnlyofficeEditorPage = React.lazy(() => import("@pages/Editor"));
@@ -37,16 +36,6 @@ const LazyRoutes: React.FC = () => {
             <OnlyofficeBasicLayoutContainer onNavbarClick={() => navigate("/")}>
               <React.Suspense fallback={<CenteredOnlyofficeSpinner />}>
                 <MainPage />
-              </React.Suspense>
-            </OnlyofficeBasicLayoutContainer>
-          }
-        />
-        <Route
-          path="files"
-          element={
-            <OnlyofficeBasicLayoutContainer onNavbarClick={() => navigate("/")}>
-              <React.Suspense fallback={<CenteredOnlyofficeSpinner />}>
-                <FilesPage />
               </React.Suspense>
             </OnlyofficeBasicLayoutContainer>
           }
