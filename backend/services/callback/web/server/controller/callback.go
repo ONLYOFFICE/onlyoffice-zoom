@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -18,6 +19,7 @@ import (
 )
 
 type callbackController struct {
+	namespace     string
 	maxSize       int64
 	logger        plog.Logger
 	client        client.Client
@@ -26,12 +28,14 @@ type callbackController struct {
 }
 
 func NewCallbackController(
+	namespace string,
 	maxSize int64,
 	logger plog.Logger,
 	client client.Client,
 	jwtManager crypto.JwtManager,
 ) *callbackController {
 	return &callbackController{
+		namespace:     namespace,
 		maxSize:       maxSize,
 		logger:        logger,
 		client:        client,
@@ -41,7 +45,7 @@ func NewCallbackController(
 }
 
 func (c callbackController) getSessionOwner(ctx context.Context, mid string) (string, error) {
-	req := c.client.NewRequest("onlyoffice:builder", "SessionHandler.GetSessionOwner", mid)
+	req := c.client.NewRequest(fmt.Sprintf("%s:builder", c.namespace), "SessionHandler.GetSessionOwner", mid)
 	var resp string
 	if err := c.client.Call(ctx, req, &resp); err != nil {
 		c.logger.Errorf("could not get session owner: %s", err.Error())
@@ -97,7 +101,7 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 			rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
 			defer cancel()
 
-			req := c.client.NewRequest("onlyoffice:builder", "SessionHandler.RefreshSession", mid)
+			req := c.client.NewRequest(fmt.Sprintf("%s:builder", c.namespace), "SessionHandler.RefreshSession", mid)
 			var res interface{}
 			if err := c.client.Call(rctx, req, &res); err != nil {
 				c.logger.Errorf("could not refresh initial session with key %s", body.Key)

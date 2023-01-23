@@ -16,6 +16,7 @@ import (
 )
 
 type CallbackService struct {
+	namespace     string
 	mux           *chi.Mux
 	client        client.Client
 	logger        log.Logger
@@ -49,6 +50,7 @@ func NewServer(opts ...Option) CallbackService {
 	jwtManager, _ := crypto.NewOnlyofficeJwtManager(options.DocSecret)
 
 	service := CallbackService{
+		namespace:     options.Namespace,
 		mux:           chi.NewRouter(),
 		logger:        options.Logger,
 		jwtManager:    jwtManager,
@@ -73,7 +75,7 @@ func (s *CallbackService) InitializeServer(c client.Client) *chi.Mux {
 	s.client = c
 	s.worker.JobWithOptions("callback-upload", work.JobOptions{
 		MaxFails: 3, SkipDead: true,
-	}, sworker.NewCallbackWorker(c, s.uploadTimeout, s.logger).UploadFile)
+	}, sworker.NewCallbackWorker(s.namespace, c, s.uploadTimeout, s.logger).UploadFile)
 	s.InitializeRoutes()
 	s.worker.Start()
 	return s.mux
@@ -81,7 +83,7 @@ func (s *CallbackService) InitializeServer(c client.Client) *chi.Mux {
 
 // InitializeRoutes builds all http routes.
 func (s *CallbackService) InitializeRoutes() {
-	callbackController := controller.NewCallbackController(s.maxSize, s.logger, s.client, s.jwtManager)
+	callbackController := controller.NewCallbackController(s.namespace, s.maxSize, s.logger, s.client, s.jwtManager)
 	s.mux.Group(func(r chi.Router) {
 		r.Use(chimiddleware.Recoverer)
 		r.NotFound(func(rw http.ResponseWriter, r *http.Request) {

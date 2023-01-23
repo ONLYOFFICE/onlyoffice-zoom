@@ -15,6 +15,7 @@ import (
 )
 
 type ConfigRPCServer struct {
+	namespace   string
 	zoomAPI     client.ZoomAuth
 	service     port.SessionService
 	jwtManager  crypto.JwtManager
@@ -42,6 +43,7 @@ func NewConfigRPCServer(opts ...Option) rpc.RPCEngine {
 	}
 
 	return ConfigRPCServer{
+		namespace:   options.Namespace,
 		zoomAPI:     client.NewZoomClient(options.ClientID, options.ClientSecret),
 		service:     service.NewSessionService(options.Logger, sessionAdapter),
 		jwtManager:  jwtManager,
@@ -67,7 +69,7 @@ func (a ConfigRPCServer) BuildMessageHandlers() []rpc.RPCMessageHandler {
 
 func (a ConfigRPCServer) BuildHandlers(c mclient.Client) []interface{} {
 	return []interface{}{
-		handler.NewConfigHandler(a.logger, c, a.zoomAPI, a.service, a.jwtManager, a.callbackURL),
+		handler.NewConfigHandler(a.namespace, a.logger, c, a.zoomAPI, a.service, a.jwtManager, a.callbackURL),
 		handler.NewSessionHandler(a.logger, a.service),
 	}
 }

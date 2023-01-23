@@ -25,6 +25,7 @@ import (
 )
 
 type ConfigHandler struct {
+	namespace   string
 	logger      plog.Logger
 	client      client.Client
 	zoomAPI     zclient.ZoomAuth
@@ -35,6 +36,7 @@ type ConfigHandler struct {
 }
 
 func NewConfigHandler(
+	namespace string,
 	logger plog.Logger,
 	client client.Client,
 	zoomAPI zclient.ZoomAuth,
@@ -43,6 +45,7 @@ func NewConfigHandler(
 	callbackURL string,
 ) ConfigHandler {
 	return ConfigHandler{
+		namespace:   namespace,
 		logger:      logger,
 		client:      client,
 		zoomAPI:     zoomAPI,
@@ -113,7 +116,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 	c.logger.Debugf("processing a docs config: %s", payload.Filename)
 
 	config, err, _ := c.group.Do(payload.Uid, func() (interface{}, error) {
-		req := c.client.NewRequest("onlyoffice:auth", "UserSelectHandler.GetUser", payload.Uid)
+		req := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", payload.Uid)
 
 		var ures response.UserResponse
 		if err := c.client.Call(ctx, req, &ures); err != nil {

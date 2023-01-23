@@ -152,6 +152,11 @@ func Server(config *config.Config) *cli.Command {
 				PERSISTENCE_URL = c.String("persistence_url")
 			)
 
+			config.Server.Namespace = "onlyoffice"
+			config.Server.Name = "auth"
+			config.REPL.Namespace = "onlyoffice"
+			config.REPL.Name = "auth.repl"
+
 			if CONFIG_PATH != "" {
 				file, err := os.Open(CONFIG_PATH)
 				if err != nil {
@@ -173,11 +178,6 @@ func Server(config *config.Config) *cli.Command {
 			if _, ok := shared.SUPPORTED_ENVIRONMENTS[config.Environment]; !ok {
 				config.Environment = shared.SUPPORTED_ENVIRONMENTS["development"]
 			}
-
-			config.Server.Namespace = "onlyoffice"
-			config.Server.Name = "auth"
-			config.REPL.Namespace = "onlyoffice"
-			config.REPL.Name = "auth.repl"
 
 			if env, ok := shared.SUPPORTED_ENVIRONMENTS[ENVIRONMENT]; ok {
 				config.Environment = env

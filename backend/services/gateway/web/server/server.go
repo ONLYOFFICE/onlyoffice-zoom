@@ -15,6 +15,7 @@ import (
 )
 
 type ZoomHTTPService struct {
+	namespace     string
 	mux           *chi.Mux
 	client        client.Client
 	logger        log.Logger
@@ -32,6 +33,7 @@ func NewServer(opts ...Option) ZoomHTTPService {
 	gin.SetMode(gin.ReleaseMode)
 
 	service := ZoomHTTPService{
+		namespace:     options.Namespace,
 		mux:           chi.NewRouter(),
 		logger:        options.Logger,
 		clientID:      options.ClientID,
@@ -70,7 +72,7 @@ func (s *ZoomHTTPService) InitializeRoutes() {
 
 	installController := controller.NewInstallController(s.logger, s.store, s.clientID)
 	authController := controller.NewAuthController(s.logger, s.store, s.client, zoomAPI.NewZoomClient(s.clientID, s.clientSecret))
-	apiController := controller.NewAPIController(s.logger, s.client, zoomAPI.NewZoomApiClient())
+	apiController := controller.NewAPIController(s.namespace, s.logger, s.client, zoomAPI.NewZoomApiClient())
 
 	s.mux.Group(func(r chi.Router) {
 		r.Use(chimiddleware.Recoverer)

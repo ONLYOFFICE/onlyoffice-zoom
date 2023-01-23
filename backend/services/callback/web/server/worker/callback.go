@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -18,6 +19,7 @@ import (
 type workerContext struct{}
 
 type callbackWorker struct {
+	namespace     string
 	client        client.Client
 	zoomFilestore zclient.ZoomFilestore
 	uploadTimeout int
@@ -28,8 +30,9 @@ func NewWorkerContext() workerContext {
 	return workerContext{}
 }
 
-func NewCallbackWorker(client client.Client, uploadTimeout int, logger log.Logger) callbackWorker {
+func NewCallbackWorker(namespace string, client client.Client, uploadTimeout int, logger log.Logger) callbackWorker {
 	return callbackWorker{
+		namespace:     namespace,
 		client:        client,
 		zoomFilestore: zclient.NewZoomFilestoreClient(),
 		uploadTimeout: uploadTimeout,
@@ -57,7 +60,7 @@ func (c callbackWorker) UploadFile(job *work.Job) error {
 		wg.Add(1)
 		defer wg.Done()
 
-		req := c.client.NewRequest("onlyoffice:auth", "UserSelectHandler.GetUser", uid)
+		req := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", uid)
 		var ures response.UserResponse
 		if err := c.client.Call(tctx, req, &ures); err != nil {
 			errChan <- err

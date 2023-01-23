@@ -26,6 +26,7 @@ func NewService(opts ...Option) (*rpc.Service, error) {
 		rpc.WithCircuitBreakerMaxConcurrent(options.Config.Resilience.CircuitBreaker.MaxConcurrent),
 		rpc.WithCircuitBreakerErrorPercentThreshold(options.Config.Resilience.CircuitBreaker.ErrorPercentThreshold),
 		rpc.WithRPC(server.NewConfigRPCServer(
+			server.WithNamespace(options.Config.Namespace),
 			server.WithClientID(options.Zoom.ClientID),
 			server.WithClientSecret(options.Zoom.ClientSecret),
 			server.WithDocSecret(options.Onlyoffice.DocSecret),

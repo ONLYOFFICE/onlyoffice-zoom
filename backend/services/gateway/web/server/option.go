@@ -9,6 +9,7 @@ type Option func(*Options)
 
 // Options defines the set of available options
 type Options struct {
+	Namespace     string
 	Logger        log.Logger
 	ClientID      string
 	ClientSecret  string
@@ -19,7 +20,8 @@ type Options struct {
 // newOptions initializes the options.
 func newOptions(opts ...Option) Options {
 	options := Options{
-		Logger: log.NewDefaultLogger(),
+		Namespace: "onlyoffice",
+		Logger:    log.NewDefaultLogger(),
 	}
 
 	for _, o := range opts {
@@ -27,6 +29,14 @@ func newOptions(opts ...Option) Options {
 	}
 
 	return options
+}
+
+func WithNamespace(val string) Option {
+	return func(o *Options) {
+		if val != "" {
+			o.Namespace = val
+		}
+	}
 }
 
 // WithLogger sets logger option.

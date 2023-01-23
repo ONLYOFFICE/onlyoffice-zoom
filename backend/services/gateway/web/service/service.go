@@ -28,6 +28,7 @@ func NewService(opts ...Option) (*http.Service, error) {
 		http.WithCircuitBreakerErrorPercentThreshold(options.Config.Resilience.CircuitBreaker.ErrorPercentThreshold),
 		http.WithServer(
 			server.NewServer(
+				server.WithNamespace(options.Config.Namespace),
 				server.WithLogger(options.Logger),
 				server.WithClientID(options.Zoom.ClientID),
 				server.WithClientSecret(options.Zoom.ClientSecret),

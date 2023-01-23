@@ -204,6 +204,11 @@ func Server(config *config.Config) *cli.Command {
 				REPL_DEBUG   = c.Bool("repl_debug")
 			)
 
+			config.Server.Namespace = "onlyoffice"
+			config.REPL.Namespace = "onlyoffice"
+			config.Server.Name = "callback"
+			config.REPL.Name = "callback.repl"
+
 			config.Callback.MaxSize = 2100000
 			config.Callback.UploadTimeout = 10
 			config.Worker.RedisDatabase = WORKER_DATABASE
@@ -229,11 +234,6 @@ func Server(config *config.Config) *cli.Command {
 			if _, ok := shared.SUPPORTED_ENVIRONMENTS[config.Environment]; !ok {
 				config.Environment = shared.SUPPORTED_ENVIRONMENTS["development"]
 			}
-
-			config.Server.Namespace = "onlyoffice"
-			config.REPL.Namespace = "onlyoffice"
-			config.Server.Name = "callback"
-			config.REPL.Name = "callback.repl"
 
 			if env, ok := shared.SUPPORTED_ENVIRONMENTS[ENVIRONMENT]; ok {
 				config.Environment = env

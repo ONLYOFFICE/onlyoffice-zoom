@@ -163,6 +163,11 @@ func Server(config *config.Config) *cli.Command {
 				REPL_DEBUG   = c.Bool("repl_debug")
 			)
 
+			config.Server.Namespace = "onlyoffice"
+			config.REPL.Namespace = "onlyoffice"
+			config.Server.Name = "gateway"
+			config.REPL.Name = "gateway.repl"
+
 			if CONFIG_PATH != "" {
 				file, err := os.Open(CONFIG_PATH)
 				if err != nil {
@@ -184,11 +189,6 @@ func Server(config *config.Config) *cli.Command {
 			if _, ok := shared.SUPPORTED_ENVIRONMENTS[config.Environment]; !ok {
 				config.Environment = shared.SUPPORTED_ENVIRONMENTS["development"]
 			}
-
-			config.Server.Namespace = "onlyoffice"
-			config.REPL.Namespace = "onlyoffice"
-			config.Server.Name = "gateway"
-			config.REPL.Name = "gateway.repl"
 
 			if env, ok := shared.SUPPORTED_ENVIRONMENTS[ENVIRONMENT]; ok {
 				config.Environment = env

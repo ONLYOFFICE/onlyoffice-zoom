@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -18,21 +19,24 @@ import (
 )
 
 type apiController struct {
-	logger  plog.Logger
-	client  client.Client
-	zoomAPI zclient.ZoomApi
+	namespace string
+	logger    plog.Logger
+	client    client.Client
+	zoomAPI   zclient.ZoomApi
 }
 
 // TODO: Distributed cache
 func NewAPIController(
+	namespace string,
 	logger plog.Logger,
 	client client.Client,
 	zoomAPI zclient.ZoomApi,
 ) *apiController {
 	return &apiController{
-		logger:  logger,
-		client:  client,
-		zoomAPI: zoomAPI,
+		namespace: namespace,
+		logger:    logger,
+		client:    client,
+		zoomAPI:   zoomAPI,
 	}
 }
 
@@ -76,7 +80,7 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 		defer cancel()
 
 		var ures response.UserResponse
-		if err := c.client.Call(r.Context(), c.client.NewRequest("onlyoffice:auth", "UserSelectHandler.GetUser", zctx.Uid), &ures); err != nil {
+		if err := c.client.Call(r.Context(), c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid), &ures); err != nil {
 			c.logger.Errorf("could not get user access info: %s", err.Error())
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)
@@ -148,7 +152,7 @@ func (c apiController) BuildGetConfig() http.HandlerFunc {
 		defer cancel()
 
 		var resp response.BuildConfigResponse
-		if err := c.client.Call(ctx, c.client.NewRequest("onlyoffice:builder", "ConfigHandler.BuildConfig", request.BuildConfigRequest{
+		if err := c.client.Call(ctx, c.client.NewRequest(fmt.Sprintf("%s:builder", c.namespace), "ConfigHandler.BuildConfig", request.BuildConfigRequest{
 			Uid:       zctx.Uid,
 			Mid:       zctx.Mid,
 			UserAgent: r.UserAgent(),
