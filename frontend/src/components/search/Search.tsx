@@ -19,7 +19,7 @@ export const OnlyofficeSearchBar: React.FC<SearchProps> = ({
     <div className="border rounded overflow-hidden flex">
       <input
         type="text"
-        className="py-2 px-2 w-full"
+        className="py-2 px-2 w-full select-auto outline-none"
         placeholder={placeholder}
         value={value}
         onChange={onChange}
