@@ -21,6 +21,7 @@ export const OnlyofficeButton: React.FC<ButtonProps> = ({
     "bg-white text-black border-2 border-slate-300 border-solid hover:shadow-lg duration-200":
       !primary,
     "w-full": fullWidth,
+    "bg-opacity-50 cursor-not-allowed": disabled,
   });
 
   return (
