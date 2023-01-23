@@ -17,11 +17,11 @@ export const OnlyofficeButton: React.FC<ButtonProps> = ({
   onClick,
 }) => {
   const classes = cx({
-    "bg-sky-500 text-slate-200 hover:shadow-lg duration-200": primary,
-    "bg-white text-black border-2 border-slate-300 border-solid hover:shadow-lg duration-200":
-      !primary,
+    "hover:shadow-lg duration-200": !disabled,
+    "bg-sky-500 text-slate-200": primary,
+    "bg-white text-black border-2 border-slate-300 border-solid": !primary,
     "w-full": fullWidth,
-    "bg-opacity-50 cursor-not-allowed": disabled,
+    "bg-opacity-50 cursor-default": disabled,
   });
 
   return (
