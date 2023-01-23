@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/pprof"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/middleware"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/middleware/cors"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"github.com/hellofresh/health-go/v5"
 	"github.com/justinas/alice"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -16,9 +18,14 @@ import (
 // NewService Initializes repl service with options.
 func NewService(opts ...Option) *http.Server {
 	options := newOptions(opts...)
-
 	mux := http.NewServeMux()
+	h, _ := health.New(health.WithComponent(health.Component{
+		Name:    fmt.Sprintf("%s:%s", options.Namespace, options.Name),
+		Version: fmt.Sprintf("v%d", options.Version),
+	}))
+
 	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/health", h.Handler())
 
 	if options.Debug {
 		mux.HandleFunc("/debug/pprof/", pprof.Index)

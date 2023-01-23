@@ -11,7 +11,7 @@ require (
 	github.com/gomodule/redigo v1.8.9
 	github.com/kamva/mgm/v3 v3.5.0
 	github.com/mitchellh/mapstructure v1.4.1
-	go.mongodb.org/mongo-driver v1.8.3
+	go.mongodb.org/mongo-driver v1.9.1
 	go.uber.org/ratelimit v0.2.0
 	gopkg.in/yaml.v2 v2.4.0
 )
@@ -128,6 +128,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/sessions v1.2.1
+	github.com/hellofresh/health-go/v5 v5.0.0
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/justinas/alice v1.2.0
@@ -160,7 +161,7 @@ require (
 	go.opentelemetry.io/otel/exporters/zipkin v1.10.0
 	go.opentelemetry.io/otel/sdk v1.10.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90 // indirect
-	golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261 // indirect
 	golang.org/x/text v0.3.7 // indirect
