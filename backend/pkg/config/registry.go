@@ -9,12 +9,5 @@ type Registry struct {
 }
 
 func (r *Registry) Validate() error {
-	if len(r.Addresses) == 0 {
-		return &InvalidConfigurationParameterError{
-			Parameter: "Addresses",
-			Reason:    "Invalid number of addresses",
-		}
-	}
-
 	return nil
 }
