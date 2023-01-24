@@ -11,6 +11,7 @@ require (
 	github.com/gomodule/redigo v1.8.9
 	github.com/kamva/mgm/v3 v3.5.0
 	github.com/mitchellh/mapstructure v1.4.1
+	github.com/olahol/melody v1.1.1
 	go.mongodb.org/mongo-driver v1.9.1
 	go.uber.org/ratelimit v0.2.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -124,10 +125,12 @@ require (
 	github.com/go-micro/plugins/v4/wrapper/select/roundrobin v1.1.0
 	github.com/go-micro/plugins/v4/wrapper/trace/opentelemetry v1.1.1
 	github.com/go-resty/resty/v2 v2.7.0
+	github.com/gobwas/ws v1.1.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/sessions v1.2.1
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hellofresh/health-go/v5 v5.0.0
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect

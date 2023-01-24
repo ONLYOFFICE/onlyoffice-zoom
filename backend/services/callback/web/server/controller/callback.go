@@ -14,6 +14,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/crypto"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/request"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/response"
+	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/wsmessage"
 	"github.com/gocraft/work"
 	"go-micro.dev/v4/client"
 )
@@ -111,6 +112,18 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 				}.ToJSON())
 				return
 			}
+
+			if err := c.client.Publish(rctx, client.NewMessage("notify-session", wsmessage.SessionMessage{
+				MID:       mid,
+				InSession: true,
+			})); err != nil {
+				rw.WriteHeader(http.StatusInternalServerError)
+				c.logger.Errorf("remove session error: %s", err.Error())
+				rw.Write(response.CallbackResponse{
+					Error: 1,
+				}.ToJSON())
+				return
+			}
 		}
 
 		if body.Status == 4 {
@@ -119,6 +132,18 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 				defer cancel()
 
 				if err := c.client.Publish(rctx, client.NewMessage("remove-session", mid)); err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					c.logger.Errorf("remove session error: %s", err.Error())
+					rw.Write(response.CallbackResponse{
+						Error: 1,
+					}.ToJSON())
+					return
+				}
+
+				if err := c.client.Publish(rctx, client.NewMessage("notify-session", wsmessage.SessionMessage{
+					MID:       mid,
+					InSession: false,
+				})); err != nil {
 					rw.WriteHeader(http.StatusInternalServerError)
 					c.logger.Errorf("remove session error: %s", err.Error())
 					rw.Write(response.CallbackResponse{
@@ -189,6 +214,15 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 					defer wg.Done()
 					if err := c.client.Publish(ctx, client.NewMessage("remove-session", mid)); err != nil {
 						errChan <- err
+						return
+					}
+
+					if err := c.client.Publish(ctx, client.NewMessage("notify-session", wsmessage.SessionMessage{
+						MID:       mid,
+						InSession: false,
+					})); err != nil {
+						errChan <- err
+						return
 					}
 				}()
 			}

@@ -6,17 +6,20 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/gateway/web/server/controller"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/gateway/web/server/middleware"
+	"github.com/ONLYOFFICE/zoom-onlyoffice/services/gateway/web/server/ws"
 	zoomAPI "github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/client"
 	"github.com/gin-gonic/gin"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/sessions"
+	"github.com/olahol/melody"
 	"go-micro.dev/v4/client"
 )
 
 type ZoomHTTPService struct {
 	namespace     string
 	mux           *chi.Mux
+	ws            *melody.Melody
 	client        client.Client
 	logger        log.Logger
 	store         sessions.Store
@@ -62,6 +65,9 @@ func (s ZoomHTTPService) NewHandler(client client.Client) interface {
 func (s *ZoomHTTPService) InitializeServer(c client.Client) *chi.Mux {
 	s.client = c
 	s.InitializeRoutes()
+	s.ws = melody.New()
+	s.ws.HandleConnect(ws.NewOnConnectHandler(s.namespace, s.ws, s.client))
+	s.client.Options().Broker.Subscribe("notify-session", ws.NewNotifyOnMessage(s.logger, s.ws))
 	return s.mux
 }
 
@@ -89,6 +95,9 @@ func (s *ZoomHTTPService) InitializeRoutes() {
 
 		r.Route("/api", func(cr chi.Router) {
 			cr.Use(ctxMiddleware)
+			cr.Get("/track/{mid}", func(w http.ResponseWriter, r *http.Request) {
+				s.ws.HandleRequest(w, r)
+			})
 			cr.Get("/files", apiController.BuildGetFiles())
 			cr.Get("/config", apiController.BuildGetConfig())
 			cr.Delete("/session", apiController.BuildDeleteSession())
