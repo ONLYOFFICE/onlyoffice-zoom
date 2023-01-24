@@ -13,6 +13,7 @@ type Options struct {
 	RedisAddresses []string
 	RedisUsername  string
 	RedisPassword  string
+	RedisDatabase  int
 	BufferSize     int
 	Logger         log.Logger
 }
@@ -22,6 +23,7 @@ func NewOptions(opts ...Option) Options {
 	opt := Options{
 		BufferSize:     100,
 		Logger:         log.NewDefaultLogger(),
+		RedisDatabase:  0,
 		RedisAddresses: []string{"0.0.0.0:6379"},
 	}
 
@@ -47,6 +49,12 @@ func WithRedisUsername(val string) Option {
 func WithRedisPassword(val string) Option {
 	return func(o *Options) {
 		o.RedisPassword = strings.TrimSpace(val)
+	}
+}
+
+func WithRedisDatabase(val int) Option {
+	return func(o *Options) {
+		o.RedisDatabase = val
 	}
 }
 

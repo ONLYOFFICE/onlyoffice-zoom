@@ -78,6 +78,7 @@ type RedisConfig struct {
 	RedisAddresses []string `yaml:"redis_addresses" env:"REDIS_ADDRESSES,overwrite"`
 	RedisUsername  string   `yaml:"redis_username" env:"REDIS_USERNAME,overwrite"`
 	RedisPassword  string   `yaml:"redis_password" env:"REDIS_PASSWORD,overwrite"`
+	RedisDatabase  int      `yaml:"redis_database" env:"REDIS_DATABASE,overwrite"`
 	BufferSize     int      `yaml:"redis_buffer_size" env:"REDIS_BUFFER_SIZE,overwrite"`
 }
 

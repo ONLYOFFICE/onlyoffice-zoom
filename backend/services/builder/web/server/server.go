@@ -31,6 +31,7 @@ func NewConfigRPCServer(opts ...Option) rpc.RPCEngine {
 		adapter.WithRedisAddresses(options.Redis.RedisAddresses),
 		adapter.WithRedisUsername(options.Redis.RedisUsername),
 		adapter.WithRedisPassword(options.Redis.RedisPassword),
+		adapter.WithRedisDatabase(options.Redis.RedisDatabase),
 		adapter.WithLogger(options.Logger),
 	)
 	if err != nil {

@@ -36,7 +36,7 @@ func NewRedisSessionAdapter(opts ...Option) (port.SessionServiceAdapter, error) 
 			Addr:        options.RedisAddresses[0],
 			Username:    options.RedisUsername,
 			Password:    options.RedisPassword,
-			DB:          0,
+			DB:          options.RedisDatabase,
 			MaxRetries:  3,
 			ReadTimeout: 2 * time.Second,
 		}
