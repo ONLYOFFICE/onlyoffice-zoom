@@ -1,13 +1,11 @@
 /* eslint-disable */
 const path = require("path");
-const Dotenv = require("dotenv-webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     entry: "./src/index.tsx",
     plugins: [
-        new Dotenv(),
         new HtmlWebpackPlugin({
             template: "src/public/index.html",
         }),
