@@ -1,7 +1,10 @@
 package ws
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"time"
 
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/gateway/web/server/middleware/security"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/wsmessage"
@@ -10,17 +13,43 @@ import (
 	"go-micro.dev/v4/client"
 )
 
-func NewOnConnectHandler(namespace string, m *melody.Melody, client client.Client) func(s *melody.Session) {
+func NewOnConnectHandler(namespace, secret string, m *melody.Melody, client client.Client) func(s *melody.Session) {
 	return func(s *melody.Session) {
-		zctx, ok := s.Request.Context().Value(security.ZoomContext{}).(security.ZoomContext)
-		if !ok || zctx.Mid == "" {
+		mid := chi.URLParam(s.Request, "mid")
+		if mid == "" {
 			s.Close()
 			return
 		}
 
-		mid := chi.URLParam(s.Request, "mid")
+		token := s.Request.URL.Query().Get("token")
+		if token == "" {
+			s.Close()
+			return
+		}
+
+		zctx, err := security.ExtractZoomContext(token, secret)
+
+		if err != nil {
+			s.Close()
+			return
+		}
+
+		now := int(time.Now().UnixMilli()) - 4*60*1000
+		if zctx.Exp < now {
+			s.Close()
+			return
+		}
+
 		ss, err := m.Sessions()
-		if err != nil || mid != zctx.Mid {
+		if err != nil {
+			s.Close()
+			return
+		}
+
+		md := md5.Sum([]byte(zctx.Mid))
+		zmid := hex.EncodeToString(md[:])
+
+		if zmid != mid {
 			s.Close()
 			return
 		}
@@ -36,9 +65,9 @@ func NewOnConnectHandler(namespace string, m *melody.Melody, client client.Clien
 			}
 		}
 
-		req := client.NewRequest(fmt.Sprintf("%s:builder", namespace), "SessionHandler.GetSessionOwner", mid)
-		var resp interface{}
-		if err := client.Call(s.Request.Context(), req, &resp); err == nil {
+		req := client.NewRequest(fmt.Sprintf("%s:builder", namespace), "SessionHandler.GetRealSession", mid)
+		var resp bool
+		if err := client.Call(s.Request.Context(), req, &resp); err == nil && resp {
 			msg := wsmessage.SessionMessage{
 				MID:       mid,
 				InSession: true,

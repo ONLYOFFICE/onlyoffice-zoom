@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	plog "github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
@@ -26,34 +27,52 @@ func NewSessionHandler(
 	}
 }
 
-func (s SessionHandler) GetSessionOwner(ctx context.Context, mid *string, response *string) error {
-	*mid = strings.TrimSpace(*mid)
+func (s SessionHandler) getSession(ctx context.Context, mid string) (domain.Session, error) {
+	mid = strings.TrimSpace(mid)
 
-	if *mid == "" {
+	if mid == "" {
 		s.logger.Error("invalid mid to fetch a session")
-		return ErrEmptyIdValue
+		return domain.Session{}, ErrEmptyIdValue
 	}
 
-	session, err, _ := s.group.Do(*mid, func() (interface{}, error) {
-		s.logger.Debugf("trying to find a session for mid %s", *mid)
-		session, err := s.service.GetSession(ctx, *mid)
+	session, err, _ := s.group.Do(mid, func() (interface{}, error) {
+		s.logger.Debugf("trying to find a session for mid %s", mid)
+		session, err := s.service.GetSession(ctx, mid)
 		if err != nil {
-			s.logger.Errorf("could not find any session for mid %s. Error: %s", *mid, err.Error())
+			s.logger.Errorf("could not find any session for mid %s. Error: %s", mid, err.Error())
 			return nil, err
 		}
 		return session, nil
 	})
 
 	if err != nil {
-		return err
+		return domain.Session{}, err
 	}
 
 	if sess, ok := session.(domain.Session); ok {
-		s.logger.Debugf("session for mid %s has been found", *mid)
-		*response = sess.Owner
-		return nil
+		s.logger.Debugf("session for mid %s has been found", mid)
+		return sess, nil
 	}
 
+	return domain.Session{}, fmt.Errorf("could not find session with id %s", mid)
+}
+
+func (s SessionHandler) GetRealSession(ctx context.Context, mid *string, response *bool) error {
+	sess, err := s.getSession(ctx, *mid)
+	if err != nil {
+		return err
+	}
+	*response = sess.Initial
+	return nil
+}
+
+func (s SessionHandler) GetSessionOwner(ctx context.Context, mid *string, response *string) error {
+	session, err := s.getSession(ctx, *mid)
+	if err != nil {
+		return err
+	}
+
+	*response = session.Owner
 	return nil
 }
 

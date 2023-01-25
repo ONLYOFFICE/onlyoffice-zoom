@@ -66,7 +66,7 @@ func (s *ZoomHTTPService) InitializeServer(c client.Client) *chi.Mux {
 	s.client = c
 	s.InitializeRoutes()
 	s.ws = melody.New()
-	s.ws.HandleConnect(ws.NewOnConnectHandler(s.namespace, s.ws, s.client))
+	s.ws.HandleConnect(ws.NewOnConnectHandler(s.namespace, s.clientSecret, s.ws, s.client))
 	s.client.Options().Broker.Subscribe("notify-session", ws.NewNotifyOnMessage(s.logger, s.ws))
 	return s.mux
 }
@@ -95,12 +95,13 @@ func (s *ZoomHTTPService) InitializeRoutes() {
 
 		r.Route("/api", func(cr chi.Router) {
 			cr.Use(ctxMiddleware)
-			cr.Get("/track/{mid}", func(w http.ResponseWriter, r *http.Request) {
-				s.ws.HandleRequest(w, r)
-			})
 			cr.Get("/files", apiController.BuildGetFiles())
 			cr.Get("/config", apiController.BuildGetConfig())
 			cr.Delete("/session", apiController.BuildDeleteSession())
+		})
+
+		r.Get("/track/{mid}", func(w http.ResponseWriter, r *http.Request) {
+			s.ws.HandleRequest(w, r)
 		})
 
 		r.Route("/deauth", func(cr chi.Router) {
