@@ -1,0 +1,1 @@
+export { OnlyofficeBackground } from "./Background";

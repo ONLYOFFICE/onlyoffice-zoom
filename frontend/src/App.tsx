@@ -17,6 +17,7 @@ function App() {
             capabilities: [
               "expandApp",
               "getAppContext",
+              "getMeetingUUID",
               "openUrl",
               "getRunningContext",
             ],

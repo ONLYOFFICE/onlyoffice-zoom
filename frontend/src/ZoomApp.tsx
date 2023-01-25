@@ -9,9 +9,11 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+import { OnlyofficeBasicLayoutContainer } from "@layouts/container";
+
 import { OnlyofficeSpinner } from "@components/spinner";
 
-import { OnlyofficeBasicLayoutContainer } from "@layouts/container";
+import { WebsocketProvider } from "@context/WebsocketContext";
 
 const MainPage = React.lazy(() => import("@pages/Main"));
 const CreationPage = React.lazy(() => import("@pages/Creation"));
@@ -64,14 +66,14 @@ const LazyRoutes: React.FC = () => {
   );
 };
 
-function ZoomApp() {
-  return (
+const ZoomApp: React.FC = () => (
+  <WebsocketProvider>
     <QueryClientProvider client={queryClient}>
       <Router>
         <LazyRoutes />
       </Router>
     </QueryClientProvider>
-  );
-}
+  </WebsocketProvider>
+);
 
 export default ZoomApp;

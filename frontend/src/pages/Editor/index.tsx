@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DocumentEditor } from "@onlyoffice/document-editor-react";
 import { motion } from "framer-motion";
@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { OnlyofficeSpinner } from "@components/spinner";
 import { OnlyofficeError } from "@components/error";
 import { OnlyofficeButton } from "@components/button";
-import { OnlyofficePopup } from "@components/popup";
 
 import { useBuildConfig } from "@hooks/useBuildConfig";
 import { removeSession } from "@services/session";
@@ -30,16 +29,14 @@ const onEditor = () => {
 export const OnlyofficeEditorPage: React.FC = () => {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const [proceed, setProceed] = useState(false);
   const { isLoading, error, data } = useBuildConfig(
-    params.get("file") || "",
-    params.get("name") || "",
-    params.get("url") || "https://onlyoffice.com"
+    params.get("file") || "sample.docx",
+    params.get("name") || "sample.docx",
+    params.get("url") ||
+      "https://d2nlctn12v279m.cloudfront.net/assets/docs/samples/new.docx"
   );
 
   const validConfig = !error && !isLoading && data;
-  const allowEditor = proceed || !data?.is_session;
-
   return (
     <motion.div
       className="w-screen h-screen"
@@ -77,19 +74,7 @@ export const OnlyofficeEditorPage: React.FC = () => {
           </div>
         </div>
       )}
-      {validConfig && data.is_session && (
-        <OnlyofficePopup
-          visible={!proceed}
-          title="Unable to open the file"
-          text="File editing session has been started by another user. Join this session or leave meeting to edit your document in ONLYOFFICE app."
-          mainBtn="Join"
-          mainAction={() => setProceed(true)}
-          secBtn="Leave"
-          secAction={() => navigate("/files")}
-          close={() => navigate("/files")}
-        />
-      )}
-      {validConfig && allowEditor && process.env.DOC_SERVER && (
+      {validConfig && process.env.DOC_SERVER && (
         <div
           id="editor"
           className="w-screen h-screen opacity-0 transition duration-250 ease-linear"

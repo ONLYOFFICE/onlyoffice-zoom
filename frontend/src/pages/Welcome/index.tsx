@@ -1,34 +1,25 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-import { OnlyofficeBackground } from "@pages/Nofiles/Background";
-import { OnlyofficeMainHeader } from "@pages/Nofiles/Header";
-
+import { OnlyofficeBackground } from "@components/background";
+import { OnlyofficeMainHeader } from "@components/header";
 import { OnlyofficeButton } from "@components/button";
 
-type InitialPageProps = {
-  session?: boolean;
-};
-
-export const InitialPage: React.FC<InitialPageProps> = ({ session }) => {
+export const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
-  const subtitle = session
-    ? "File editing session has been started by another user. Join this session?"
-    : "You may open and create a new document without registration or upload your own files using Drag'n'Drop";
-  const btn = session ? "Join" : "Create with ONLYOFFICE";
   return (
     <>
       <div className="flex flex-col justify-center items-center h-3/4 px-8">
         <div className="max-w-[363px]">
           <OnlyofficeMainHeader
             title="Welcome to ONLYOFFICE!"
-            subtitle={subtitle}
+            subtitle="You may open and create a new document without registration or upload your own files using Drag'n'Drop"
           />
         </div>
         <div className="w-full pt-5 pl-2 z-50 max-w-[544px] flex">
           <div className="w-full flex items-stretch">
             <OnlyofficeButton
-              text={btn}
+              text="Create with ONLYOFFICE"
               primary
               fullWidth
               onClick={() => navigate("/create")}
@@ -43,4 +34,4 @@ export const InitialPage: React.FC<InitialPageProps> = ({ session }) => {
   );
 };
 
-export default InitialPage;
+export default WelcomePage;
