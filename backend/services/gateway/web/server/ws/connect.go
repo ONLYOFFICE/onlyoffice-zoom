@@ -67,7 +67,7 @@ func NewOnConnectHandler(namespace, secret string, m *melody.Melody, client clie
 
 		req := client.NewRequest(fmt.Sprintf("%s:builder", namespace), "SessionHandler.GetRealSession", mid)
 		var resp bool
-		if err := client.Call(s.Request.Context(), req, &resp); err == nil && resp {
+		if err := client.Call(s.Request.Context(), req, &resp); err == nil && !resp {
 			msg := wsmessage.SessionMessage{
 				MID:       mid,
 				InSession: true,
