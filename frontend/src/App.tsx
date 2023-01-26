@@ -7,7 +7,6 @@ import BrowserApp from "./BrowserApp";
 function App() {
   const [zoom, setZoom] = useState(false);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     import("@zoom/appssdk").then((zoomSdk) => {
       setTimeout(() => {
