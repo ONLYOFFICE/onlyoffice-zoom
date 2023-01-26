@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { WelcomePage } from "@pages/Welcome";
 
@@ -17,6 +18,7 @@ import { formatBytes, getFileIcon, isFileSupported } from "@utils/file";
 import { File } from "src/types/file";
 
 export const FilesPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [query, setQuery] = useState<string | null>(null);
   const {
@@ -68,7 +70,7 @@ export const FilesPage: React.FC = () => {
         <div className="relative w-full max-w-[790px] h-full flex flex-col my-0 mx-auto md:py-10 pt-10 pb-0">
           <div className="w-full h-20 flex justify-center items-center px-5 pb-10">
             <OnlyofficeButton
-              text="Create with ONLYOFFICE"
+              text={t("button.create") || "Create with ONLYOFFICE"}
               primary
               fullWidth
               onClick={() => navigate("/create")}
@@ -76,18 +78,22 @@ export const FilesPage: React.FC = () => {
           </div>
           <div className="table-shadow pb-10 h-[calc(100%-5rem)]">
             <div className="flex items-center justify-center h-12 mx-5 max-w-full truncate text-ellipsis">
-              <OnlyofficeTitle text="My Zoom documents" />
+              <OnlyofficeTitle text={t("files.title") || "My Zoom documents"} />
             </div>
             <div className="flex h-12 px-5">
               <OnlyofficeSearchBar
-                placeholder="Search"
+                placeholder={t("files.search") || "Search"}
                 value={query || ""}
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
             <div className="px-5 overflow-scroll h-[calc(100%-3rem-1rem)] md:justify-between no-scrollbar">
               {!isLoading && (!!error || files?.length === 0) && (
-                <OnlyofficeNoFile title="Could not find zoom files" />
+                <OnlyofficeNoFile
+                  title={
+                    t("files.error.nofiles") || "Could not find zoom files"
+                  }
+                />
               )}
               {!error &&
                 files &&

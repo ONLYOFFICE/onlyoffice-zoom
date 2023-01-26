@@ -1,0 +1,21 @@
+{
+    "button.create": "Create with ONLYOFFICE",
+    "button.cancel": "Cancel",
+    "button.back": "Go back",
+    "button.join": "Join",
+    "files.title": "My Zoom documents",
+    "files.search": "Search",
+    "files.error.nofiles": "Could not find zoom files",
+    "editor.error": "Could not open the file. Something went wrong",
+    "creation.newfile": "New Document",
+    "creation.title": "Create with ONLYOFFICE",
+    "creation.input": "Title",
+    "creation.input.error": "Please fill out this field",
+    "creation.tile.document": "Document",
+    "creation.tile.spreadsheet": "Spreadsheet",
+    "creation.tile.presentation": "Presentation",
+    "session.title": "Welcome to ONLYOFFICE!",
+    "session.subtitle": "File editing session has been started by another user. Join this session?",
+    "welcome.title": "Welcome to ONLYOFFICE!",
+    "welcome.subtitle": "You may open and create a new document without registration or upload your own files using Drag'n'Drop"
+}

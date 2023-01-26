@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DocumentEditor } from "@onlyoffice/document-editor-react";
 import { motion } from "framer-motion";
@@ -27,6 +28,7 @@ const onEditor = () => {
 };
 
 export const OnlyofficeEditorPage: React.FC = () => {
+  const { t } = useTranslation();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { isLoading, error, data } = useBuildConfig(
@@ -54,7 +56,7 @@ export const OnlyofficeEditorPage: React.FC = () => {
           <div className="small:mb-5 small:px-5 small:w-full">
             <OnlyofficeButton
               primary
-              text="Cancel"
+              text={t("button.cancel") || "Cancel"}
               fullWidth
               onClick={() => navigate("/")}
             />
@@ -64,11 +66,16 @@ export const OnlyofficeEditorPage: React.FC = () => {
       {!!error && (
         <div className="w-screen h-screen flex justify-center flex-col items-center mb-1">
           <img src={icon} alt="error-icon" />
-          <OnlyofficeError text="Could not open the file. Something went wrong" />
+          <OnlyofficeError
+            text={
+              t("editor.error") ||
+              "Could not open the file. Something went wrong"
+            }
+          />
           <div className="pt-5">
             <OnlyofficeButton
               primary
-              text="Go back"
+              text={t("button.back") || "Go back"}
               onClick={() => navigate("/")}
             />
           </div>

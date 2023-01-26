@@ -5,33 +5,29 @@ import React, {
   useContext,
   useMemo,
 } from "react";
+import i18n from "i18next";
 import { getMe } from "@services/me";
 
-const LangContext = createContext<{ lang: string; loading: boolean }>({
-  lang: "en-US",
+const LangContext = createContext<{ loading: boolean }>({
   loading: true,
 });
 
 export const LangProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const [lang, setLang] = useState("en-US");
   const [loading, setLoading] = useState(true);
   const value = useMemo(
     () => ({
-      lang,
       loading,
     }),
-    [lang, loading]
+    [loading]
   );
 
   useEffect(() => {
     setLoading(true);
     getMe()
-      .then((res) => {
-        setLang(res.response.language || "en-US");
-      })
-      .catch(() => setLang("en-US"))
+      .then((res) => i18n.changeLanguage(res.response.language || "en-US"))
+      .catch(() => i18n.changeLanguage("en-US"))
       .finally(() => setLoading(false));
   }, []);
 
