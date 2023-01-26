@@ -39,7 +39,7 @@ func (s SessionHandler) getSession(ctx context.Context, mid string) (domain.Sess
 		s.logger.Debugf("trying to find a session for mid %s", mid)
 		session, err := s.service.GetSession(ctx, mid)
 		if err != nil {
-			s.logger.Errorf("could not find any session for mid %s. Error: %s", mid, err.Error())
+			s.logger.Debugf("could not find any session for mid %s. Error: %s", mid, err.Error())
 			return nil, err
 		}
 		return session, nil
