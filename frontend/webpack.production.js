@@ -15,6 +15,8 @@ module.exports = merge(common, {
             'process.env.WORD_FILE': JSON.stringify(process.env.WORD_FILE),
             'process.env.SLIDE_FILE': JSON.stringify(process.env.SLIDE_FILE),
             'process.env.SPREADSHEET_FILE': JSON.stringify(process.env.SPREADSHEET_FILE),
+            'process.env.FILE_STALE_TIME': JSON.stringify(process.env.FILE_STALE_TIME),
+            'process.env.FILE_CACHE_TIME': JSON.stringify(process.env.FILE_CACHE_TIME),
         }),
         // new WebpackObfuscator({
         //     rotateStringArray: true,
