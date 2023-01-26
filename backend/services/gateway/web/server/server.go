@@ -95,6 +95,7 @@ func (s *ZoomHTTPService) InitializeRoutes() {
 
 		r.Route("/api", func(cr chi.Router) {
 			cr.Use(ctxMiddleware)
+			cr.Get("/me", apiController.BuildGetMe())
 			cr.Get("/files", apiController.BuildGetFiles())
 			cr.Get("/config", apiController.BuildGetConfig())
 			cr.Delete("/session", apiController.BuildDeleteSession())

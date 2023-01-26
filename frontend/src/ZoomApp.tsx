@@ -14,6 +14,7 @@ import { OnlyofficeBasicLayoutContainer } from "@layouts/container";
 import { OnlyofficeSpinner } from "@components/spinner";
 
 import { WebsocketProvider } from "@context/WebsocketContext";
+import { LangProvider } from "@context/LangContext";
 
 const MainPage = React.lazy(() => import("@pages/Main"));
 const CreationPage = React.lazy(() => import("@pages/Creation"));
@@ -68,11 +69,13 @@ const LazyRoutes: React.FC = () => {
 
 const ZoomApp: React.FC = () => (
   <WebsocketProvider>
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <LazyRoutes />
-      </Router>
-    </QueryClientProvider>
+    <LangProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <LazyRoutes />
+        </Router>
+      </QueryClientProvider>
+    </LangProvider>
   </WebsocketProvider>
 );
 

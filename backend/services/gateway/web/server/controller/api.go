@@ -181,6 +181,45 @@ func (c apiController) BuildGetConfig() http.HandlerFunc {
 	}
 }
 
+func (c apiController) BuildGetMe() http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		zctx, ok := r.Context().Value(security.ZoomContext{}).(security.ZoomContext)
+		if !ok {
+			rw.WriteHeader(http.StatusForbidden)
+			c.logger.Error("could not extract zoom context from the context")
+			return
+		}
+
+		var ures response.UserResponse
+		if err := c.client.Call(r.Context(), c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid), &ures); err != nil {
+			c.logger.Errorf("could not get user access info: %s", err.Error())
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				rw.WriteHeader(http.StatusRequestTimeout)
+				return
+			}
+
+			microErr := response.MicroError{}
+			if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
+				rw.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			rw.WriteHeader(microErr.Code)
+			return
+		}
+
+		usr, err := c.zoomAPI.GetMe(r.Context(), ures.AccessToken)
+		if err != nil {
+			c.logger.Errorf("could not get me: %s", err.Error())
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		buf, _ := json.Marshal(usr)
+		rw.Write(buf)
+	}
+}
+
 func (c apiController) BuildDeleteSession() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		zctx, ok := r.Context().Value(security.ZoomContext{}).(security.ZoomContext)

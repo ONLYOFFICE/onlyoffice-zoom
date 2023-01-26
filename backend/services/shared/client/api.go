@@ -13,6 +13,7 @@ import (
 )
 
 type ZoomApi interface {
+	GetMe(ctx context.Context, token string) (model.User, error)
 	GetFilesFromMessages(ctx context.Context, token string, params map[string]string) (model.ZoomFileMessage, error)
 	GetFileFromMessage(ctx context.Context, token, uid, mid, fid string) (model.ZoomFile, error)
 }
@@ -43,6 +44,28 @@ func NewZoomApiClient() ZoomApi {
 				return r.StatusCode() == http.StatusTooManyRequests
 			}),
 	}
+}
+
+func (c zoomApiClient) GetMe(ctx context.Context, token string) (model.User, error) {
+	var resp model.User
+	res, err := c.client.R().
+		SetContext(ctx).
+		SetAuthToken(token).
+		SetResult(&resp).
+		Get("/v2/users/me")
+
+	if err != nil {
+		return resp, err
+	}
+
+	if res.StatusCode() != http.StatusOK {
+		return resp, &UnexpectedStatusCodeError{
+			Action: "get me",
+			Code:   res.StatusCode(),
+		}
+	}
+
+	return resp, nil
 }
 
 func (c zoomApiClient) GetFilesFromMessages(ctx context.Context, token string, params map[string]string) (model.ZoomFileMessage, error) {
