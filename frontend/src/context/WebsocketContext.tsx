@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-no-constructed-context-values */
 import React, {
   useState,
   useEffect,
@@ -6,6 +5,7 @@ import React, {
   createContext,
   useContext,
   useCallback,
+  useMemo,
 } from "react";
 import md5 from "md5";
 import zoomSdk from "@zoom/appssdk";
@@ -24,37 +24,52 @@ export const WebsocketProvider: React.FC<{
   const [error, setError] = useState(false);
   const [value, setValue] = useState(null);
   const rws = useRef<ReconnectingWebSocket | null>(null);
+  const res = useMemo(
+    () => ({
+      ready,
+      error,
+      value,
+    }),
+    [ready, error, value]
+  );
+
   const urlProvider = useCallback(async () => {
-    const meeting = await zoomSdk.getMeetingUUID();
-    const appCtx = await zoomSdk.getAppContext();
-    return `${new URL(process.env.BACKEND_GATEWAY_WS || "").toString()}/${md5(
-      meeting.meetingUUID
-    )}?token=${appCtx.context}`;
+    try {
+      const meeting = await zoomSdk.getMeetingUUID();
+      const appCtx = await zoomSdk.getAppContext();
+      return `${new URL(process.env.BACKEND_GATEWAY_WS || "").toString()}/${md5(
+        meeting.meetingUUID
+      )}?token=${appCtx.context}`;
+    } catch {
+      return "";
+    }
   }, []);
 
   useEffect(() => {
-    const socket = new ReconnectingWebSocket(urlProvider);
-    socket.onopen = () => {
-      setReady(true);
-      setError(false);
-    };
-    socket.onclose = () => setReady(false);
-    socket.onmessage = (event) => setValue(event.data);
-    socket.onerror = () => setError(true);
-    rws.current = socket;
+    let socket: ReconnectingWebSocket | null;
+    zoomSdk
+      .getMeetingUUID()
+      .then(() => {
+        socket = new ReconnectingWebSocket(urlProvider);
+        socket.onopen = () => {
+          setReady(true);
+          setError(false);
+        };
+        socket.onclose = () => setReady(false);
+        socket.onmessage = (event) => setValue(event.data);
+        socket.onerror = () => setError(true);
+        rws.current = socket;
+      })
+      .catch(() => {
+        setReady(true);
+      });
     return () => {
-      socket.close();
+      socket?.close();
     };
   }, [urlProvider]);
 
   return (
-    <WebsocketContext.Provider
-      value={{
-        ready,
-        error,
-        value,
-      }}
-    >
+    <WebsocketContext.Provider value={res}>
       {children}
     </WebsocketContext.Provider>
   );
