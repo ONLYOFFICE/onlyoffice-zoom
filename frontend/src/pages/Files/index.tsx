@@ -54,7 +54,8 @@ export const FilesPage: React.FC = () => {
   };
 
   const initialLoad = isLoading && query === null;
-  const noFiles = !isLoading && (files?.length === 0 || error);
+  const noFiles =
+    !isLoading && ((files?.length === 0 && query === null) || error);
   const tableLoad =
     (!isLoading && !error && files && files.length > 0) || query !== null;
 
