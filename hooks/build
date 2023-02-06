@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export DOCKER_BUILDKIT=1 PRODUCT_VERSION=$DOCKER_TAG
+docker-compose build \
+  --build-arg BACKEND_GATEWAY=$BACKEND_GATEWAY \
+  --build-arg BACKEND_GATEWAY_WS=$BACKEND_GATEWAY_WS \
+  --build-arg DOC_SERVER=$DOC_SERVER \
+  --build-arg WORD_FILE=$WORD_FILE \
+  --build-arg SLIDE_FILE=$SLIDE_FILE \
+  --build-arg SPREADSHEET_FILE=$SPREADSHEET_FILE

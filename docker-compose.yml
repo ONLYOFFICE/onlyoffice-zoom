@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+  gateway:
+    build:
+      context: .
+      target: gateway
+    image: onlyoffice/zoom-gateway:${PRODUCT_VERSION}
+
+  auth:
+    build:
+      context: .
+      target: auth
+    image: onlyoffice/zoom-auth:${PRODUCT_VERSION}
+
+  builder:
+    build:
+      context: .
+      target: builder
+    image: onlyoffice/zoom-builder:${PRODUCT_VERSION}
+
+  callback:
+    build:
+      context: .
+      target: callback
+    image: onlyoffice/zoom-callback:${PRODUCT_VERSION}
+
+  frontend:
+    build:
+      context: .
+      target: frontend
+    image: onlyoffice/zoom-frontend:${PRODUCT_VERSION}
