@@ -13,13 +13,7 @@ function App() {
         zoomSdk.default
           .config({
             popoutSize: { width: 480, height: 360 },
-            capabilities: [
-              "expandApp",
-              "getAppContext",
-              "getMeetingUUID",
-              "openUrl",
-              "getRunningContext",
-            ],
+            capabilities: ["expandApp", "getAppContext", "getMeetingUUID"],
           })
           .then(() => setZoom(true))
           .catch(() => setZoom(false))

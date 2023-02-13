@@ -30,9 +30,10 @@ type ZoomFilestore interface {
 
 type zoomFilestoreClient struct {
 	client *resty.Client
+	logger log.Logger
 }
 
-func NewZoomFilestoreClient() ZoomFilestore {
+func NewZoomFilestoreClient(logger log.Logger) ZoomFilestore {
 	otelClient := otelhttp.DefaultClient
 	otelClient.Transport = otelhttp.NewTransport(&http.Transport{
 		Proxy:                 http.ProxyFromEnvironment,
@@ -55,6 +56,7 @@ func NewZoomFilestoreClient() ZoomFilestore {
 
 	return zoomFilestoreClient{
 		client: client,
+		logger: logger,
 	}
 }
 
@@ -66,14 +68,16 @@ func emptyMultipartSize(fieldname, filename string) int64 {
 	return int64(body.Len())
 }
 
-func doRequest(ctx context.Context, address, method string, body io.Reader, contentType string, contentLength int64, desiredStatus int, token string) (*http.Response, error) {
+func (c zoomFilestoreClient) doRequest(ctx context.Context, address, method string, body io.Reader, contentType string, contentLength int64, desiredStatus int, token string) (*http.Response, error) {
 	targetURL, err := url.Parse(address)
 	if err != nil {
+		c.logger.Error(err.Error())
 		return nil, err
 	}
 
 	request, err := http.NewRequest(method, targetURL.String(), body)
 	if err != nil {
+		c.logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -86,6 +90,7 @@ func doRequest(ctx context.Context, address, method string, body io.Reader, cont
 		request.ContentLength = contentLength
 	}
 
+	c.logger.Debugf("POST content-length: %d", request.ContentLength)
 	response, err := otelhttp.DefaultClient.Do(request.WithContext(ctx))
 	if err != nil {
 		return nil, err
@@ -93,6 +98,7 @@ func doRequest(ctx context.Context, address, method string, body io.Reader, cont
 
 	if response.StatusCode != desiredStatus {
 		response.Body.Close()
+		c.logger.Errorf("unexpected '%s' from: %s %s", response.Status, method, targetURL.String())
 		return nil, fmt.Errorf("unexpected '%s' from: %s %s", response.Status, method, targetURL.String())
 	}
 
@@ -108,6 +114,7 @@ func (c zoomFilestoreClient) getFile(ctx context.Context, url string) (io.ReadCl
 		return nil, err
 	}
 
+	c.logger.Debugf("got a file response form document server with length %s", fileResp.Header().Get("Content-Length"))
 	return fileResp.RawBody(), nil
 }
 
@@ -117,6 +124,8 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 	if token == "" || uid == "" {
 		return _ErrInvalidClientToken
 	}
+
+	c.logger.Debugf("got an upload job with token %s and uid %s", token, uid)
 
 	var wg sync.WaitGroup
 	fileChan := make(chan io.ReadCloser)
@@ -150,6 +159,7 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 			return
 		}
 
+		c.logger.Debugf("got a new zoom location to POST a new file: %s", res.Header().Get("Location"))
 		urlChan <- res.Header().Get("Location")
 	}()
 
@@ -157,6 +167,7 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 
 	select {
 	case err := <-errorsChan:
+		c.logger.Error(err.Error())
 		return err
 	default:
 	}
@@ -180,6 +191,7 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 		}
 
 		if _, err := io.CopyN(part, file, size); err != nil {
+			c.logger.Errorf("could not pipe data to writer: %s", err.Error())
 			errChan <- err
 			return
 		}
@@ -187,7 +199,7 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 		errChan <- form.Close()
 	}()
 
-	if _, err := doRequest(ctx, url, "POST", readBody, form.FormDataContentType(), contentLength, http.StatusCreated, token); err != nil {
+	if _, err := c.doRequest(ctx, url, "POST", readBody, form.FormDataContentType(), contentLength, http.StatusCreated, token); err != nil {
 		<-errChan
 		return err
 	}
