@@ -34,7 +34,7 @@ func NewCallbackWorker(namespace string, client client.Client, uploadTimeout int
 	return callbackWorker{
 		namespace:     namespace,
 		client:        client,
-		zoomFilestore: zclient.NewZoomFilestoreClient(),
+		zoomFilestore: zclient.NewZoomFilestoreClient(logger),
 		uploadTimeout: uploadTimeout,
 		logger:        logger,
 	}

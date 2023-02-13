@@ -40,7 +40,7 @@ func NewCallbackController(
 		maxSize:       maxSize,
 		logger:        logger,
 		client:        client,
-		zoomFilestore: zclient.NewZoomFilestoreClient(),
+		zoomFilestore: zclient.NewZoomFilestoreClient(logger),
 		jwtManager:    jwtManager,
 	}
 }
