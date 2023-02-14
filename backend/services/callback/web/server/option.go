@@ -12,7 +12,7 @@ type Option func(*Options)
 type Options struct {
 	Namespace     string
 	Logger        log.Logger
-	Worker        worker.Options
+	Worker        worker.WorkerOptions
 	DocSecret     string
 	MaxSize       int64
 	UploadTimeout int
@@ -66,7 +66,7 @@ func WithMaxSize(val int64) Option {
 	}
 }
 
-func WithWorker(val worker.Options) Option {
+func WithWorker(val worker.WorkerOptions) Option {
 	return func(o *Options) {
 		o.Worker = val
 	}

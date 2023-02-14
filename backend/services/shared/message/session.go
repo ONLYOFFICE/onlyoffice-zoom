@@ -1,4 +1,4 @@
-package wsmessage
+package message
 
 import "encoding/json"
 

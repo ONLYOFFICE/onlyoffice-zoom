@@ -35,15 +35,15 @@ func NewService(opts ...Option) (*http.Service, error) {
 				server.WithDocSecret(options.Onlyoffice.DocSecret),
 				server.WithMaxSize(options.Callback.MaxSize),
 				server.WithUploadTimeout(options.Callback.UploadTimeout),
-				server.WithWorker(worker.NewOptions(
-					worker.WithMaxActive(options.Worker.MaxActive),
-					worker.WithMaxIdle(options.Worker.MaxIdle),
+				server.WithWorker(worker.NewWorkerOptions(
 					worker.WithMaxConcurrency(options.Worker.MaxConcurrency),
-					worker.WithRedisNamespace(options.Worker.RedisNamespace),
-					worker.WithRedisAddress(options.Worker.RedisAddress),
-					worker.WithRedisUsername(options.Worker.RedisUsername),
-					worker.WithRedisPassword(options.Worker.RedisPassword),
-					worker.WithRedisDatabase(options.Worker.RedisDatabase),
+					worker.WithRedisCredentials(worker.WorkerRedisCredentials{
+						Addresses: []string{options.Worker.RedisAddress},
+						Username:  options.Worker.RedisUsername,
+						Password:  options.Worker.RedisPassword,
+						Database:  options.Worker.RedisDatabase,
+					}),
+					worker.WithLogger(options.Logger),
 				)),
 			),
 		),

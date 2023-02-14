@@ -5,14 +5,14 @@ import (
 	"strings"
 
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
-	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/wsmessage"
+	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/message"
 	"github.com/olahol/melody"
 	"go-micro.dev/v4/broker"
 )
 
 func NewNotifyOnMessage(logger log.Logger, m *melody.Melody) func(p broker.Event) error {
 	return func(p broker.Event) error {
-		var msg wsmessage.SessionMessage
+		var msg message.SessionMessage
 		if err := json.Unmarshal(p.Message().Body, &msg); err != nil {
 			logger.Errorf("could not notify ws clients. Reason: %s", err.Error())
 			return err

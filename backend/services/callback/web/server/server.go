@@ -6,12 +6,11 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/worker"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/callback/web/server/controller"
-	sworker "github.com/ONLYOFFICE/zoom-onlyoffice/services/callback/web/server/worker"
+	workerh "github.com/ONLYOFFICE/zoom-onlyoffice/services/callback/web/server/worker"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/crypto"
 	"github.com/gin-gonic/gin"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/gocraft/work"
 	"go-micro.dev/v4/client"
 )
 
@@ -21,8 +20,8 @@ type CallbackService struct {
 	client        client.Client
 	logger        log.Logger
 	jwtManager    crypto.JwtManager
-	worker        *work.WorkerPool
-	enqueuer      *work.Enqueuer
+	worker        worker.BackgroundWorker
+	enqueuer      worker.BackgroundEnqueuer
 	maxSize       int64
 	uploadTimeout int
 }
@@ -37,14 +36,14 @@ func NewServer(opts ...Option) CallbackService {
 	gin.SetMode(gin.ReleaseMode)
 
 	options := newOptions(opts...)
-	wopts := []worker.Option{
-		worker.WithMaxActive(options.Worker.MaxActive),
-		worker.WithMaxIdle(options.Worker.MaxIdle),
-		worker.WithRedisNamespace(options.Worker.RedisNamespace),
-		worker.WithRedisAddress(options.Worker.RedisAddress),
-		worker.WithRedisUsername(options.Worker.RedisUsername),
-		worker.WithRedisPassword(options.Worker.RedisPassword),
-		worker.WithRedisDatabase(options.Worker.RedisDatabase),
+	wopts := []worker.WorkerOption{
+		worker.WithMaxConcurrency(options.Worker.MaxConcurrency),
+		worker.WithRedisCredentials(worker.WorkerRedisCredentials{
+			Addresses: options.Worker.RedisCredentials.Addresses,
+			Username:  options.Worker.RedisCredentials.Username,
+			Password:  options.Worker.RedisCredentials.Password,
+			Database:  options.Worker.RedisCredentials.Database,
+		}),
 	}
 
 	jwtManager, _ := crypto.NewOnlyofficeJwtManager(options.DocSecret)
@@ -54,8 +53,8 @@ func NewServer(opts ...Option) CallbackService {
 		mux:           chi.NewRouter(),
 		logger:        options.Logger,
 		jwtManager:    jwtManager,
-		worker:        worker.NewRedisWorker(sworker.NewWorkerContext(), wopts...),
-		enqueuer:      worker.NewRedisEnqueuer(wopts...),
+		worker:        worker.NewBackgroundWorker(wopts...),
+		enqueuer:      worker.NewBackgroundEnqueuer(wopts...),
 		maxSize:       options.MaxSize,
 		uploadTimeout: options.UploadTimeout,
 	}
@@ -73,22 +72,20 @@ func (s CallbackService) NewHandler(client client.Client) interface {
 // InitializeServer sets all injected dependencies.
 func (s *CallbackService) InitializeServer(c client.Client) *chi.Mux {
 	s.client = c
-	s.worker.JobWithOptions("callback-upload", work.JobOptions{
-		MaxFails: 3, SkipDead: true,
-	}, sworker.NewCallbackWorker(s.namespace, c, s.uploadTimeout, s.logger).UploadFile)
+	s.worker.Register("callback-upload", workerh.NewCallbackWorker(s.namespace, c, s.uploadTimeout, s.logger).UploadFile)
 	s.InitializeRoutes()
-	s.worker.Start()
+	s.worker.Run()
 	return s.mux
 }
 
 // InitializeRoutes builds all http routes.
 func (s *CallbackService) InitializeRoutes() {
-	callbackController := controller.NewCallbackController(s.namespace, s.maxSize, s.logger, s.client, s.jwtManager)
+	callbackController := controller.NewCallbackController(s.namespace, s.maxSize, s.logger, s.client, s.enqueuer, s.jwtManager)
 	s.mux.Group(func(r chi.Router) {
 		r.Use(chimiddleware.Recoverer)
 		r.NotFound(func(rw http.ResponseWriter, r *http.Request) {
 			http.Redirect(rw, r.WithContext(r.Context()), "https://onlyoffice.com", http.StatusMovedPermanently)
 		})
-		r.Post("/callback", callbackController.BuildPostHandleCallback(s.enqueuer))
+		r.Post("/callback", callbackController.BuildPostHandleCallback())
 	})
 }

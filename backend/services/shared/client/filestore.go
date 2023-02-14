@@ -75,7 +75,7 @@ func (c zoomFilestoreClient) doRequest(ctx context.Context, address, method stri
 		return nil, err
 	}
 
-	request, err := http.NewRequest(method, targetURL.String(), body)
+	request, err := http.NewRequestWithContext(ctx, method, targetURL.String(), body)
 	if err != nil {
 		c.logger.Error(err.Error())
 		return nil, err
@@ -91,7 +91,7 @@ func (c zoomFilestoreClient) doRequest(ctx context.Context, address, method stri
 	}
 
 	c.logger.Debugf("POST content-length: %d", request.ContentLength)
-	response, err := otelhttp.DefaultClient.Do(request.WithContext(ctx))
+	response, err := otelhttp.DefaultClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -128,8 +128,8 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 	c.logger.Debugf("got an upload job with token %s and uid %s", token, uid)
 
 	var wg sync.WaitGroup
-	fileChan := make(chan io.ReadCloser)
-	urlChan := make(chan string)
+	fileChan := make(chan io.ReadCloser, 1)
+	urlChan := make(chan string, 1)
 	errorsChan := make(chan error, 2)
 
 	go func() {
@@ -141,7 +141,13 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 			return
 		}
 
+		c.logger.Debugf("populating file channel")
+		if file == nil {
+			errorsChan <- _ErrInvalidContentLength
+			return
+		}
 		fileChan <- file
+		c.logger.Debugf("successfully populated file channel")
 	}()
 
 	go func() {
@@ -154,22 +160,28 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 			SetPathParam("user", uid).
 			Post(fmt.Sprintf("%s/chat/users/{user}/files", constants.ZOOM_FILE_API_HOST))
 
-		if res.StatusCode() != 307 {
+		if res.StatusCode() != 307 || res.Header().Get("Location") == "" {
+			c.logger.Debugf("expected status code to be 307, got: %d", res.StatusCode())
 			errorsChan <- err
 			return
 		}
 
 		c.logger.Debugf("got a new zoom location to POST a new file: %s", res.Header().Get("Location"))
 		urlChan <- res.Header().Get("Location")
+		c.logger.Debugf("successfully populated url channel")
 	}()
 
+	c.logger.Debugf("waiting for goroutines to finish execution")
 	wg.Wait()
+	c.logger.Debugf("goroutines have finished the execution")
 
 	select {
 	case err := <-errorsChan:
-		c.logger.Error(err.Error())
+		close(fileChan)
+		close(urlChan)
 		return err
 	default:
+		c.logger.Debugf("select default")
 	}
 
 	file, url := <-fileChan, <-urlChan

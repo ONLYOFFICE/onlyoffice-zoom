@@ -190,10 +190,7 @@ func Server(config *config.Config) *cli.Command {
 				TRACER_TYPE    = c.String("tracer_type")
 				TRACER_RATIO   = c.Float64("tracer_ratio")
 
-				WORKER_MAX_ACTIVE      = c.Int("worker_max_active")
-				WORKER_MAX_IDLE        = c.Int("worker_max_idle")
-				WORKER_MAX_CONCURRENCY = c.Uint("worker_max_concurrency")
-				WORKER_NAMESPACE       = c.String("worker_namespace")
+				WORKER_MAX_CONCURRENCY = c.Int("worker_max_concurrency")
 				WORKER_ADDRESS         = c.String("worker_address")
 				WORKER_USERNAME        = c.String("worker_username")
 				WORKER_PASSWORD        = c.String("worker_password")
@@ -329,20 +326,8 @@ func Server(config *config.Config) *cli.Command {
 				config.Tracer.FractionRatio = TRACER_RATIO
 			}
 
-			if WORKER_MAX_ACTIVE > 0 {
-				config.Worker.MaxActive = WORKER_MAX_ACTIVE
-			}
-
-			if WORKER_MAX_IDLE > 0 {
-				config.Worker.MaxIdle = WORKER_MAX_IDLE
-			}
-
 			if WORKER_MAX_CONCURRENCY > 0 {
 				config.Worker.MaxConcurrency = WORKER_MAX_CONCURRENCY
-			}
-
-			if WORKER_NAMESPACE != "" {
-				config.Worker.RedisNamespace = WORKER_NAMESPACE
 			}
 
 			if WORKER_ADDRESS != "" {

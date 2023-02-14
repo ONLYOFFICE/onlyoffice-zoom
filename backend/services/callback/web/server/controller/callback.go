@@ -10,12 +10,12 @@ import (
 	"time"
 
 	plog "github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
+	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/worker"
 	zclient "github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/client"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/crypto"
+	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/message"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/request"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/response"
-	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/wsmessage"
-	"github.com/gocraft/work"
 	"go-micro.dev/v4/client"
 )
 
@@ -24,6 +24,7 @@ type callbackController struct {
 	maxSize       int64
 	logger        plog.Logger
 	client        client.Client
+	enqueuer      worker.BackgroundEnqueuer
 	zoomFilestore zclient.ZoomFilestore
 	jwtManager    crypto.JwtManager
 }
@@ -33,12 +34,14 @@ func NewCallbackController(
 	maxSize int64,
 	logger plog.Logger,
 	client client.Client,
+	enqueuer worker.BackgroundEnqueuer,
 	jwtManager crypto.JwtManager,
 ) *callbackController {
 	return &callbackController{
 		namespace:     namespace,
 		maxSize:       maxSize,
 		logger:        logger,
+		enqueuer:      enqueuer,
 		client:        client,
 		zoomFilestore: zclient.NewZoomFilestoreClient(logger),
 		jwtManager:    jwtManager,
@@ -56,7 +59,7 @@ func (c callbackController) getSessionOwner(ctx context.Context, mid string) (st
 	return resp, nil
 }
 
-func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) http.HandlerFunc {
+func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		mid := strings.TrimSpace(r.URL.Query().Get("mid"))
 		rw.Header().Set("Content-Type", "application/json")
@@ -113,7 +116,7 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 				return
 			}
 
-			if err := c.client.Publish(rctx, client.NewMessage("notify-session", wsmessage.SessionMessage{
+			if err := c.client.Publish(rctx, client.NewMessage("notify-session", message.SessionMessage{
 				MID:       mid,
 				InSession: true,
 			})); err != nil {
@@ -140,7 +143,7 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 					return
 				}
 
-				if err := c.client.Publish(rctx, client.NewMessage("notify-session", wsmessage.SessionMessage{
+				if err := c.client.Publish(rctx, client.NewMessage("notify-session", message.SessionMessage{
 					MID:       mid,
 					InSession: false,
 				})); err != nil {
@@ -196,12 +199,12 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 						return
 					}
 
-					if _, err := enqueuer.Enqueue("callback-upload", map[string]interface{}{
-						"uid":      usr,
-						"filename": filename,
-						"url":      body.URL,
-					}); err != nil {
-						c.logger.Errorf("could not enqueue a new job")
+					if err := c.enqueuer.Enqueue("callback-upload", message.JobMessage{
+						UID:      usr,
+						Filename: filename,
+						Url:      body.URL,
+					}.ToJSON(), worker.WithMaxRetry(3)); err != nil {
+						c.logger.Errorf("could not enqueue a new task: %s", err.Error())
 						errChan <- err
 						return
 					}
@@ -217,7 +220,7 @@ func (c callbackController) BuildPostHandleCallback(enqueuer *work.Enqueuer) htt
 						return
 					}
 
-					if err := c.client.Publish(ctx, client.NewMessage("notify-session", wsmessage.SessionMessage{
+					if err := c.client.Publish(ctx, client.NewMessage("notify-session", message.SessionMessage{
 						MID:       mid,
 						InSession: false,
 					})); err != nil {
