@@ -38,7 +38,7 @@ func newAsynqWorker(opts ...WorkerOption) BackgroundWorker {
 
 	return asynqWorker{
 		srv: asynq.NewServer(workerOpts, asynq.Config{
-			Concurrency: 1,
+			Concurrency: options.MaxConcurrency,
 			Logger:      options.Logger,
 		}),
 		mux: asynq.NewServeMux(),
