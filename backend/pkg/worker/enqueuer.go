@@ -1,31 +1,22 @@
 package worker
 
 import (
-	"fmt"
-
-	"github.com/gocraft/work"
-	"github.com/gomodule/redigo/redis"
+	"context"
 )
 
-func NewRedisEnqueuer(opts ...Option) *work.Enqueuer {
-	options := NewOptions(opts...)
+type BackgroundEnqueuer interface {
+	Enqueue(pattern string, task []byte, opts ...EnqueuerOption) error
+	EnqueueContext(ctx context.Context, pattern string, task []byte, opts ...EnqueuerOption) error
+	Close() error
+}
 
-	o := []redis.DialOption{
-		redis.DialReadTimeout(options.RedisReadTimeout),
-		redis.DialWriteTimeout(options.RedisWriteTimeout),
-		redis.DialUsername(options.RedisUsername),
-		redis.DialPassword(options.RedisPassword),
-		redis.DialDatabase(options.RedisDatabase),
+func NewBackgroundEnqueuer(opts ...WorkerOption) BackgroundEnqueuer {
+	options := NewWorkerOptions(opts...)
+
+	switch options.WorkerType {
+	case Asynq:
+		return newAsynqEnqueuer(opts...)
+	default:
+		return newAsynqEnqueuer(opts...)
 	}
-
-	pool := &redis.Pool{
-		MaxActive: options.MaxActive,
-		MaxIdle:   options.MaxIdle,
-		Wait:      true,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial("tcp", options.RedisAddress, o...)
-		},
-	}
-
-	return work.NewEnqueuer(fmt.Sprintf("{%s}", options.RedisNamespace), pool)
 }
