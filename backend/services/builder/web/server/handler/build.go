@@ -168,7 +168,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 			}
 			config.DocumentType = fileType
 			config.EditorConfig.CallbackURL = fmt.Sprintf("%s?mid=%s&filename=%s", cbURL, payload.Mid, url.QueryEscape(session.Filename))
-			config.IssuedAt, config.ExpiresAt = time.Now().UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
+			config.IssuedAt, config.ExpiresAt = time.Now().Add(-3*time.Second).UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {
 				c.logger.Errorf("could not sign a docs config for mid: %s. Error: %s", payload.Mid, err.Error())
 				return nil, err
