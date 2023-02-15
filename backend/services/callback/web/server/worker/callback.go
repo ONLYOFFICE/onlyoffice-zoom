@@ -19,18 +19,12 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-type workerContext struct{}
-
 type callbackWorker struct {
 	namespace     string
 	client        client.Client
 	zoomFilestore zclient.ZoomFilestore
 	uploadTimeout int
 	logger        log.Logger
-}
-
-func NewWorkerContext() workerContext {
-	return workerContext{}
 }
 
 func NewCallbackWorker(namespace string, client client.Client, uploadTimeout int, logger log.Logger) callbackWorker {
