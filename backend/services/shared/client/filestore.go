@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
@@ -98,8 +97,8 @@ func (c zoomFilestoreClient) doRequest(ctx context.Context, address, method stri
 
 	if response.StatusCode != desiredStatus {
 		response.Body.Close()
-		c.logger.Errorf("unexpected '%s' from: %s %s", response.Status, method, targetURL.String())
-		return nil, fmt.Errorf("unexpected '%s' from: %s %s", response.Status, method, targetURL.String())
+		c.logger.Warnf("unexpected '%s' from: %s %s", response.Status, method, targetURL.String())
+		return response, fmt.Errorf("unexpected '%s' from: %s %s", response.Status, method, targetURL.String())
 	}
 
 	return response, nil
@@ -127,96 +126,71 @@ func (c zoomFilestoreClient) UploadFile(ctx context.Context, url, token, uid, fi
 
 	c.logger.Debugf("got an upload job with token %s and uid %s", token, uid)
 
-	var wg sync.WaitGroup
-	fileChan := make(chan io.ReadCloser, 1)
-	urlChan := make(chan string, 1)
-	errorsChan := make(chan error, 2)
+	contentLength := emptyMultipartSize("file", filename) + size
+	fReader, fWriter := io.Pipe()
+	sReader, sWriter := io.Pipe()
+	formOne := multipart.NewWriter(fWriter)
+	formTwo := multipart.NewWriter(sWriter)
+	defer fReader.Close()
+	defer sReader.Close()
 
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
+		defer fWriter.Close()
 		file, err := c.getFile(ctx, url)
 		if err != nil {
-			errorsChan <- err
+			return
+		} else if file == nil {
 			return
 		}
+		defer file.Close()
 
-		c.logger.Debugf("populating file channel")
-		if file == nil {
-			errorsChan <- _ErrInvalidContentLength
-			return
-		}
-		fileChan <- file
-		c.logger.Debugf("successfully populated file channel")
-	}()
-
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-		res, err := c.client.R().
-			SetContext(ctx).
-			SetAuthToken(token).
-			SetFileReader("file", filename, bytes.NewReader([]byte{})).
-			SetPathParam("user", uid).
-			Post(fmt.Sprintf("%s/chat/users/{user}/files", constants.ZOOM_FILE_API_HOST))
-
-		if res.StatusCode() != 307 || res.Header().Get("Location") == "" {
-			c.logger.Debugf("expected status code to be 307, got: %d", res.StatusCode())
-			errorsChan <- err
-			return
-		}
-
-		c.logger.Debugf("got a new zoom location to POST a new file: %s", res.Header().Get("Location"))
-		urlChan <- res.Header().Get("Location")
-		c.logger.Debugf("successfully populated url channel")
-	}()
-
-	c.logger.Debugf("waiting for goroutines to finish execution")
-	wg.Wait()
-	c.logger.Debugf("goroutines have finished the execution")
-
-	select {
-	case err := <-errorsChan:
-		close(fileChan)
-		close(urlChan)
-		return err
-	default:
-		c.logger.Debugf("select default")
-	}
-
-	file, url := <-fileChan, <-urlChan
-	defer file.Close()
-
-	contentLength := emptyMultipartSize("file", filename) + size
-	readBody, writeBody := io.Pipe()
-	defer readBody.Close()
-	form := multipart.NewWriter(writeBody)
-	errChan := make(chan error, 1)
-
-	go func() {
-		defer writeBody.Close()
-
-		part, err := form.CreateFormFile("file", filename)
+		part, err := formOne.CreateFormFile("file", filename)
 		if err != nil {
-			errChan <- err
 			return
 		}
 
 		if _, err := io.CopyN(part, file, size); err != nil {
 			c.logger.Errorf("could not pipe data to writer: %s", err.Error())
-			errChan <- err
 			return
 		}
 
-		errChan <- form.Close()
+		formOne.Close()
 	}()
 
-	if _, err := c.doRequest(ctx, url, "POST", readBody, form.FormDataContentType(), contentLength, http.StatusCreated, token); err != nil {
-		<-errChan
+	go func() {
+		defer sWriter.Close()
+		file, err := c.getFile(ctx, url)
+		if err != nil {
+			return
+		} else if file == nil {
+			return
+		}
+		defer file.Close()
+
+		part, err := formTwo.CreateFormFile("file", filename)
+		if err != nil {
+			return
+		}
+
+		if _, err := io.CopyN(part, file, size); err != nil {
+			c.logger.Errorf("could not pipe data to writer: %s", err.Error())
+			return
+		}
+
+		formTwo.Close()
+	}()
+
+	if resp, err := c.doRequest(ctx, fmt.Sprintf("%s/chat/users/%s/files", constants.ZOOM_FILE_API_HOST, uid), "POST", fReader, formOne.FormDataContentType(), contentLength, http.StatusCreated, token); err != nil {
+		if resp != nil && resp.Header.Get("Location") != "" {
+			if _, err = c.doRequest(ctx, resp.Header.Get("Location"), "POST", sReader, formTwo.FormDataContentType(), contentLength, http.StatusCreated, token); err != nil {
+				return err
+			}
+			return nil
+		}
 		return err
 	}
 
-	return <-errChan
+	return nil
 }
 
 func (c zoomFilestoreClient) ValidateFileSize(ctx context.Context, limit int64, url string) error {

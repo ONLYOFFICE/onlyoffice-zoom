@@ -159,6 +159,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/streadway/amqp v1.0.0 // indirect
 	github.com/stretchr/testify v1.8.0
+	github.com/tomclegg/nbtee v0.0.0-20161017181217-1e959ce7dc6a
 	github.com/urfave/cli/v2 v2.14.0
 	github.com/xanzy/ssh-agent v0.3.2 // indirect
 	go-micro.dev/v4 v4.9.0

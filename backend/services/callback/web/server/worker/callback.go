@@ -112,7 +112,7 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 
 	ures := <-userChan
 	if err := c.zoomFilestore.UploadFile(tctx, msg.Url, ures.AccessToken, ures.ID, msg.Filename, <-sizeChan); err != nil {
-		c.logger.Debugf("could not upload an onlyoffice file to zoom: %s", err.Error())
+		c.logger.Errorf("could not upload an onlyoffice file to zoom: %s", err.Error())
 		return err
 	}
 
