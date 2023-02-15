@@ -143,6 +143,7 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 					return
 				}
 
+				time.Sleep(150 * time.Millisecond)
 				if err := c.client.Publish(rctx, client.NewMessage("notify-session", message.SessionMessage{
 					MID:       mid,
 					InSession: false,
