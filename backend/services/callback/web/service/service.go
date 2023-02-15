@@ -38,7 +38,7 @@ func NewService(opts ...Option) (*http.Service, error) {
 				server.WithWorker(worker.NewWorkerOptions(
 					worker.WithMaxConcurrency(options.Worker.MaxConcurrency),
 					worker.WithRedisCredentials(worker.WorkerRedisCredentials{
-						Addresses: []string{options.Worker.RedisAddress},
+						Addresses: options.Worker.RedisAddresses,
 						Username:  options.Worker.RedisUsername,
 						Password:  options.Worker.RedisPassword,
 						Database:  options.Worker.RedisDatabase,

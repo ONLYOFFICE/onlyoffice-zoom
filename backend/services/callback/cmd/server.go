@@ -112,24 +112,12 @@ func Server(config *config.Config) *cli.Command {
 				Name:  "tracer_ratio",
 				Usage: "sets distributed tracing ratio",
 			},
-			&cli.IntFlag{
-				Name:  "worker_max_active",
-				Usage: "sets max active workers",
-			},
-			&cli.IntFlag{
-				Name:  "worker_max_idle",
-				Usage: "sets max idle workers",
-			},
 			&cli.UintFlag{
 				Name:  "worker_max_concurrency",
 				Usage: "sets max worker's concurrency",
 			},
-			&cli.StringFlag{
-				Name:  "worker_namespace",
-				Usage: "sets worker's namespace",
-			},
-			&cli.StringFlag{
-				Name:  "worker_address",
+			&cli.StringSliceFlag{
+				Name:  "worker_addresses",
 				Usage: "sets worker's broker address",
 			},
 			&cli.StringFlag{
@@ -191,7 +179,7 @@ func Server(config *config.Config) *cli.Command {
 				TRACER_RATIO   = c.Float64("tracer_ratio")
 
 				WORKER_MAX_CONCURRENCY = c.Int("worker_max_concurrency")
-				WORKER_ADDRESS         = c.String("worker_address")
+				WORKER_ADDRESS         = c.StringSlice("worker_addresses")
 				WORKER_USERNAME        = c.String("worker_username")
 				WORKER_PASSWORD        = c.String("worker_password")
 				WORKER_DATABASE        = c.Int("worker_database")
@@ -330,8 +318,8 @@ func Server(config *config.Config) *cli.Command {
 				config.Worker.MaxConcurrency = WORKER_MAX_CONCURRENCY
 			}
 
-			if WORKER_ADDRESS != "" {
-				config.Worker.RedisAddress = WORKER_ADDRESS
+			if len(WORKER_ADDRESS) > 0 {
+				config.Worker.RedisAddresses = WORKER_ADDRESS
 			}
 
 			if WORKER_USERNAME != "" {
