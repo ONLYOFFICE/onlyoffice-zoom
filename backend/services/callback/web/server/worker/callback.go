@@ -61,6 +61,7 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
+		defer close(userChan)
 
 		c.logger.Debugf("trying to get an access token")
 		req := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", msg.UID)
@@ -80,6 +81,7 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
+		defer close(sizeChan)
 
 		headResp, err := otelhttp.Head(tctx, msg.Url)
 		if err != nil {
@@ -104,8 +106,6 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 
 	select {
 	case err := <-errChan:
-		close(userChan)
-		close(sizeChan)
 		return err
 	default:
 	}
