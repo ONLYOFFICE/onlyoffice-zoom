@@ -53,5 +53,6 @@ func (a AuthRPCServer) BuildMessageHandlers() []rpc.RPCMessageHandler {
 func (a AuthRPCServer) BuildHandlers(client mclient.Client) []interface{} {
 	return []interface{}{
 		handler.NewUserSelectHandler(a.service, client, a.zoomAPI, a.logger),
+		handler.NewUserDeleteHandler(a.service),
 	}
 }
