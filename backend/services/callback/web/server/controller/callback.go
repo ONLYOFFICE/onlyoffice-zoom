@@ -105,23 +105,23 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 			rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
 			defer cancel()
 
-			if err := c.client.Publish(rctx, client.NewMessage("notify-session", message.SessionMessage{
-				MID:       mid,
-				InSession: true,
-			})); err != nil {
-				rw.WriteHeader(http.StatusInternalServerError)
-				c.logger.Errorf("remove session error: %s", err.Error())
+			req := c.client.NewRequest(fmt.Sprintf("%s:builder", c.namespace), "SessionHandler.RefreshSession", mid)
+			var res interface{}
+			if err := c.client.Call(rctx, req, &res); err != nil {
+				c.logger.Errorf("could not refresh initial session with key %s", body.Key)
+				rw.WriteHeader(http.StatusBadRequest)
 				rw.Write(response.CallbackResponse{
 					Error: 1,
 				}.ToJSON())
 				return
 			}
 
-			req := c.client.NewRequest(fmt.Sprintf("%s:builder", c.namespace), "SessionHandler.RefreshSession", mid)
-			var res interface{}
-			if err := c.client.Call(rctx, req, &res); err != nil {
-				c.logger.Errorf("could not refresh initial session with key %s", body.Key)
-				rw.WriteHeader(http.StatusBadRequest)
+			if err := c.client.Publish(rctx, client.NewMessage("notify-session", message.SessionMessage{
+				MID:       mid,
+				InSession: true,
+			})); err != nil {
+				rw.WriteHeader(http.StatusInternalServerError)
+				c.logger.Errorf("remove session error: %s", err.Error())
 				rw.Write(response.CallbackResponse{
 					Error: 1,
 				}.ToJSON())
