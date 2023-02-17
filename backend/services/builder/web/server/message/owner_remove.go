@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"time"
 
 	plog "github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/builder/web/server/core/port"
@@ -32,9 +31,6 @@ func (i OwnerRemoveSessionMessageHandler) GetHandler() func(context.Context, int
 			return _ErrInvalidHandlerPayload
 		}
 
-		dctx, cancel := context.WithTimeout(ctx, 4*time.Second)
-		defer cancel()
-
 		if request.Mid == "" {
 			return nil
 		}
@@ -42,13 +38,13 @@ func (i OwnerRemoveSessionMessageHandler) GetHandler() func(context.Context, int
 		md := md5.Sum([]byte(request.Mid))
 		mid := hex.EncodeToString(md[:])
 
-		sess, err := i.service.GetSession(dctx, mid)
+		sess, err := i.service.GetSession(ctx, mid)
 		if err != nil {
 			return nil
 		}
 
 		if sess.Owner == request.Uid {
-			return i.service.DeleteSession(dctx, mid)
+			return i.service.DeleteSession(ctx, mid)
 		}
 
 		return nil
