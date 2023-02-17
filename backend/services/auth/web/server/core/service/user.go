@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
+	"sync"
 
 	plog "github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/auth/web/server/core/domain"
@@ -11,7 +13,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/crypto"
 )
 
-var _ErrOperationTimeout = errors.New("operation timeout")
+var _ErrOperationTimeout = errors.New("user operation timeout")
 
 type userService struct {
 	logger    plog.Logger
@@ -32,53 +34,61 @@ func NewUserService(
 }
 
 func (s userService) CreateUser(ctx context.Context, user domain.UserAccess) error {
-	errChan := make(chan error)
-	doneChan := make(chan bool)
+	s.logger.Debugf("validating user %s to perform a persist action", user.ID)
+	if err := user.Validate(); err != nil {
+		return err
+	}
+
+	var wg sync.WaitGroup
+	atokenErrChan := make(chan error)
+	rtokenErrChan := make(chan error)
+	atokenChan := make(chan string)
+	rtokenChan := make(chan string)
 
 	go func() {
-		s.logger.Debugf("validating user %s to perform a persist action", user.ID)
-		if err := user.Validate(); err != nil {
-			errChan <- err
-			return
-		}
-
+		wg.Add(1)
+		defer wg.Done()
+		defer close(atokenChan)
+		defer close(atokenErrChan)
 		aToken, err := s.encryptor.Encrypt(user.AccessToken)
 		if err != nil {
-			errChan <- err
+			atokenErrChan <- err
 			return
 		}
-
-		rToken, err := s.encryptor.Encrypt(user.RefreshToken)
-		if err != nil {
-			errChan <- err
-			return
-		}
-
-		s.logger.Debugf("user %s is valid. Persisting to database: %s", user.ID, user.AccessToken)
-		if err := s.adapter.InsertUser(ctx, domain.UserAccess{
-			ID:           user.ID,
-			AccessToken:  aToken,
-			RefreshToken: rToken,
-			TokenType:    user.TokenType,
-			Scope:        user.Scope,
-			ExpiresAt:    user.ExpiresAt,
-		}); err != nil {
-			if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-				errChan <- err
-			}
-			return
-		}
-
-		doneChan <- true
+		atokenChan <- aToken
 	}()
 
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		defer close(rtokenChan)
+		defer close(rtokenErrChan)
+		rToken, err := s.encryptor.Encrypt(user.RefreshToken)
+		if err != nil {
+			rtokenErrChan <- err
+			return
+		}
+		rtokenChan <- rToken
+	}()
+
+	wg.Wait()
+
 	select {
-	case err := <-errChan:
+	case err := <-atokenErrChan:
+		return err
+	case err := <-rtokenErrChan:
 		return err
 	case <-ctx.Done():
 		return _ErrOperationTimeout
-	case <-doneChan:
-		return nil
+	default:
+		return s.adapter.InsertUser(ctx, domain.UserAccess{
+			ID:           user.ID,
+			AccessToken:  <-atokenChan,
+			RefreshToken: <-rtokenChan,
+			TokenType:    user.TokenType,
+			Scope:        user.Scope,
+			ExpiresAt:    user.ExpiresAt,
+		})
 	}
 }
 
@@ -93,48 +103,61 @@ func (s userService) GetUser(ctx context.Context, uid string) (domain.UserAccess
 		}
 	}
 
-	errChan := make(chan error)
-	doneChan := make(chan domain.UserAccess)
+	user, err := s.adapter.SelectUserByID(ctx, id)
+	if err != nil {
+		return domain.UserAccess{}, err
+	}
+
+	var wg sync.WaitGroup
+	atokenErrChan := make(chan error)
+	rtokenErrChan := make(chan error)
+	atokenChan := make(chan string)
+	rtokenChan := make(chan string)
 
 	go func() {
-		user, err := s.adapter.SelectUserByID(ctx, id)
-		if err != nil {
-			if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-				errChan <- err
-			}
-			return
-		}
-
+		wg.Add(1)
+		defer wg.Done()
+		defer close(atokenChan)
+		defer close(atokenErrChan)
 		aToken, err := s.encryptor.Decrypt(user.AccessToken)
 		if err != nil {
-			errChan <- err
+			atokenErrChan <- err
 			return
 		}
-
-		rToken, err := s.encryptor.Decrypt(user.RefreshToken)
-		if err != nil {
-			errChan <- err
-			return
-		}
-
-		s.logger.Debugf("found a user: %v", user)
-		doneChan <- domain.UserAccess{
-			ID:           user.ID,
-			AccessToken:  aToken,
-			RefreshToken: rToken,
-			TokenType:    user.TokenType,
-			Scope:        user.Scope,
-			ExpiresAt:    user.ExpiresAt,
-		}
+		atokenChan <- aToken
 	}()
 
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		defer close(rtokenChan)
+		defer close(rtokenErrChan)
+		rToken, err := s.encryptor.Decrypt(user.RefreshToken)
+		if err != nil {
+			rtokenErrChan <- err
+			return
+		}
+		rtokenChan <- rToken
+	}()
+
+	wg.Wait()
+
 	select {
-	case err := <-errChan:
+	case err := <-atokenErrChan:
+		return domain.UserAccess{}, err
+	case err := <-rtokenErrChan:
 		return domain.UserAccess{}, err
 	case <-ctx.Done():
 		return domain.UserAccess{}, _ErrOperationTimeout
-	case usr := <-doneChan:
-		return usr, nil
+	default:
+		return domain.UserAccess{
+			ID:           user.ID,
+			AccessToken:  <-atokenChan,
+			RefreshToken: <-rtokenChan,
+			TokenType:    user.TokenType,
+			Scope:        user.Scope,
+			ExpiresAt:    user.ExpiresAt,
+		}, nil
 	}
 }
 
@@ -144,46 +167,62 @@ func (s userService) UpdateUser(ctx context.Context, user domain.UserAccess) (do
 		return domain.UserAccess{}, err
 	}
 
-	errChan := make(chan error)
-	doneChan := make(chan bool)
+	s.logger.Debugf("user %s is valid to perform an update action", user.ID)
+
+	var wg sync.WaitGroup
+	atokenErrChan := make(chan error)
+	rtokenErrChan := make(chan error)
+	atokenChan := make(chan string)
+	rtokenChan := make(chan string)
 
 	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		defer close(atokenChan)
+		defer close(atokenErrChan)
 		aToken, err := s.encryptor.Encrypt(user.AccessToken)
 		if err != nil {
-			errChan <- err
+			fmt.Println(err.Error())
+			atokenErrChan <- err
 			return
 		}
+		atokenChan <- aToken
+	}()
 
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		defer close(rtokenChan)
+		defer close(rtokenErrChan)
 		rToken, err := s.encryptor.Encrypt(user.RefreshToken)
 		if err != nil {
-			errChan <- err
+			fmt.Println(err.Error())
+			rtokenErrChan <- err
 			return
 		}
+		rtokenChan <- rToken
+	}()
 
-		s.logger.Debugf("user %s is valid to perform an update action", user.ID)
+	wg.Wait()
+
+	select {
+	case err := <-atokenErrChan:
+		return user, err
+	case err := <-rtokenErrChan:
+		return user, err
+	case <-ctx.Done():
+		return user, _ErrOperationTimeout
+	default:
 		if _, err := s.adapter.UpsertUser(ctx, domain.UserAccess{
 			ID:           user.ID,
-			AccessToken:  aToken,
-			RefreshToken: rToken,
+			AccessToken:  <-atokenChan,
+			RefreshToken: <-rtokenChan,
 			TokenType:    user.TokenType,
 			Scope:        user.Scope,
 			ExpiresAt:    user.ExpiresAt,
 		}); err != nil {
-			if !errors.Is(err, context.Canceled) && !errors.Is(err, context.DeadlineExceeded) {
-				errChan <- err
-			}
-			return
+			return user, err
 		}
-
-		doneChan <- true
-	}()
-
-	select {
-	case err := <-errChan:
-		return user, err
-	case <-ctx.Done():
-		return user, _ErrOperationTimeout
-	case <-doneChan:
 		return user, nil
 	}
 }
