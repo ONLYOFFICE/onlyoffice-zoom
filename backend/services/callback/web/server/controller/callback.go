@@ -105,17 +105,6 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 			rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
 			defer cancel()
 
-			req := c.client.NewRequest(fmt.Sprintf("%s:builder", c.namespace), "SessionHandler.RefreshSession", mid)
-			var res interface{}
-			if err := c.client.Call(rctx, req, &res); err != nil {
-				c.logger.Errorf("could not refresh initial session with key %s", body.Key)
-				rw.WriteHeader(http.StatusBadRequest)
-				rw.Write(response.CallbackResponse{
-					Error: 1,
-				}.ToJSON())
-				return
-			}
-
 			if err := c.client.Publish(rctx, client.NewMessage("notify-session", message.SessionMessage{
 				MID:       mid,
 				InSession: true,
@@ -127,11 +116,22 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 				}.ToJSON())
 				return
 			}
+
+			req := c.client.NewRequest(fmt.Sprintf("%s:builder", c.namespace), "SessionHandler.RefreshSession", mid)
+			var res interface{}
+			if err := c.client.Call(rctx, req, &res); err != nil {
+				c.logger.Errorf("could not refresh initial session with key %s", body.Key)
+				rw.WriteHeader(http.StatusBadRequest)
+				rw.Write(response.CallbackResponse{
+					Error: 1,
+				}.ToJSON())
+				return
+			}
 		}
 
 		if body.Status == 4 {
 			if mid != "" {
-				rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
+				rctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
 				defer cancel()
 
 				if err := c.client.Publish(rctx, client.NewMessage("remove-session", mid)); err != nil {
@@ -169,7 +169,8 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 				return
 			}
 
-			errChan := make(chan error, 2)
+			ferrChan := make(chan error)
+			serrChan := make(chan error)
 			var wg sync.WaitGroup
 
 			ctx, cancel := context.WithTimeout(r.Context(), 7*time.Second)
@@ -196,7 +197,7 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 					defer wg.Done()
 					if err := c.zoomFilestore.ValidateFileSize(ctx, c.maxSize, body.URL); err != nil {
 						c.logger.Errorf("could not validate file %s: %s", filename, err.Error())
-						errChan <- err
+						ferrChan <- err
 						return
 					}
 
@@ -206,7 +207,7 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 						Url:      body.URL,
 					}.ToJSON(), worker.WithMaxRetry(3)); err != nil {
 						c.logger.Errorf("could not enqueue a new task: %s", err.Error())
-						errChan <- err
+						ferrChan <- err
 						return
 					}
 				}()
@@ -217,7 +218,7 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 				go func() {
 					defer wg.Done()
 					if err := c.client.Publish(ctx, client.NewMessage("remove-session", mid)); err != nil {
-						errChan <- err
+						serrChan <- err
 						return
 					}
 
@@ -225,17 +226,22 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 						MID:       mid,
 						InSession: false,
 					})); err != nil {
-						errChan <- err
+						serrChan <- err
 						return
 					}
 				}()
 			}
 
 			wg.Wait()
-			defer close(errChan)
 
 			select {
-			case <-errChan:
+			case <-ferrChan:
+				rw.WriteHeader(http.StatusInternalServerError)
+				rw.Write(response.CallbackResponse{
+					Error: 1,
+				}.ToJSON())
+				return
+			case <-serrChan:
 				rw.WriteHeader(http.StatusInternalServerError)
 				rw.Write(response.CallbackResponse{
 					Error: 1,
