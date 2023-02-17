@@ -81,14 +81,11 @@ func NewRedisSessionAdapter(opts ...Option) (port.SessionServiceAdapter, error) 
 	return adapter, nil
 }
 
-func (s redisSessionAdapter) broadcastAndPersist(key, value string, expiresIn time.Duration) error {
+func (s redisSessionAdapter) broadcastAndPersist(ctx context.Context, key, value string, expiresIn time.Duration) error {
 	if err := s.redisLock.Lock(); err != nil {
 		return err
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 2000*time.Millisecond)
 	defer s.redisLock.Unlock()
-	defer cancel()
 
 	if err := s.redisClient.Set(ctx, key, value, expiresIn).Err(); err != nil {
 		return err
@@ -97,10 +94,7 @@ func (s redisSessionAdapter) broadcastAndPersist(key, value string, expiresIn ti
 	return nil
 }
 
-func (s redisSessionAdapter) broadcastAndRemove(key string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 2500*time.Second)
-	defer cancel()
-
+func (s redisSessionAdapter) broadcastAndRemove(ctx context.Context, key string) error {
 	if err := s.redisLock.Lock(); err != nil {
 		return err
 	}
@@ -115,7 +109,7 @@ func (s redisSessionAdapter) InsertSession(ctx context.Context, mid string, sess
 		return session, err
 	}
 
-	if err := s.broadcastAndPersist(mid, string(buf), expiresAt); err != nil {
+	if err := s.broadcastAndPersist(ctx, mid, string(buf), expiresAt); err != nil {
 		return session, err
 	}
 
@@ -137,7 +131,7 @@ func (s redisSessionAdapter) SelectSessionByMettingID(ctx context.Context, mid s
 }
 
 func (s redisSessionAdapter) DeleteSessionByMeetingID(ctx context.Context, mid string) error {
-	if err := s.broadcastAndRemove(mid); err != nil {
+	if err := s.broadcastAndRemove(ctx, mid); err != nil {
 		return err
 	}
 
