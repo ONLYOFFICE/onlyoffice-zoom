@@ -199,28 +199,36 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 			return
 		}
 
+		ureq := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid)
 		var ures response.UserResponse
-		if err := c.client.Call(r.Context(), c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid), &ures); err != nil {
-			c.logger.Errorf("could not get user access info: %s", err.Error())
-			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-				rw.WriteHeader(http.StatusRequestTimeout)
+		if res, ok := c.client.Options().Cache.Get(r.Context(), &ureq); ok && res != nil {
+			ures = res.(response.UserResponse)
+		} else {
+			err := c.client.Call(r.Context(), ureq, &ures)
+			if err != nil {
+				c.logger.Errorf("could not get user access info: %s", err.Error())
+				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+					rw.WriteHeader(http.StatusRequestTimeout)
+					return
+				}
+
+				microErr := response.MicroError{}
+				if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
+					rw.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				rw.WriteHeader(microErr.Code)
 				return
 			}
-
-			microErr := response.MicroError{}
-			if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
-				rw.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			rw.WriteHeader(microErr.Code)
-			return
+			c.client.Options().Cache.Set(r.Context(), &ureq, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
 		}
 
 		usr, err := c.zoomAPI.GetMe(r.Context(), ures.AccessToken)
 		if err != nil {
+			c.client.Options().Cache.Set(r.Context(), &ureq, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
 			c.logger.Errorf("could not get me: %s", err.Error())
-			rw.WriteHeader(http.StatusInternalServerError)
+			rw.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
