@@ -1,6 +1,10 @@
 package controller
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -16,23 +20,26 @@ import (
 )
 
 type authController struct {
-	logger  plog.Logger
-	store   sessions.Store
-	client  client.Client
-	zoomAPI zclient.ZoomAuth
+	namespace string
+	logger    plog.Logger
+	store     sessions.Store
+	client    client.Client
+	zoomAPI   zclient.ZoomAuth
 }
 
 func NewAuthController(
+	namespace string,
 	logger plog.Logger,
 	store sessions.Store,
 	client client.Client,
 	zoomAPI zclient.ZoomAuth,
 ) *authController {
 	return &authController{
-		logger:  logger,
-		store:   store,
-		client:  client,
-		zoomAPI: zoomAPI,
+		namespace: namespace,
+		logger:    logger,
+		store:     store,
+		client:    client,
+		zoomAPI:   zoomAPI,
 	}
 }
 
@@ -125,6 +132,7 @@ func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 
 func (c authController) BuildPostDeauth() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
+		c.logger.Debug("got a deauth request")
 		event, ok := r.Context().Value(security.ZoomContext{}).(request.DeauthorizationEventRequest)
 
 		if !ok {
@@ -135,13 +143,25 @@ func (c authController) BuildPostDeauth() http.HandlerFunc {
 
 		c.logger.Debugf("got a deauth event: %v", event)
 
-		if err := c.client.Publish(r.Context(), client.NewMessage("delete-auth", event.Payload.Uid)); err != nil {
-			c.logger.Errorf("could not publish a user %s delete message", event.Payload.Uid)
-			rw.WriteHeader(http.StatusInternalServerError)
+		var res interface{}
+		if err := c.client.Call(r.Context(), c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserDeleteHandler.DeleteUser", event.Payload.Uid), &res); err != nil {
+			c.logger.Errorf("could not delete user: %s", err.Error())
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				rw.WriteHeader(http.StatusRequestTimeout)
+				return
+			}
+
+			microErr := response.MicroError{}
+			if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
+				rw.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
+			rw.WriteHeader(microErr.Code)
 			return
 		}
 
-		c.logger.Debugf("successfully published a deauth message: %s", event.Payload.Uid)
+		c.logger.Debugf("deleted user %s", event.Payload.Uid)
 		rw.WriteHeader(http.StatusOK)
 	}
 }

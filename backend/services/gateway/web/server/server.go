@@ -77,7 +77,7 @@ func (s *ZoomHTTPService) InitializeRoutes() {
 	eventMiddleware := middleware.BuildHandleZoomEventMiddleware(s.logger, s.webhookSecret)
 
 	installController := controller.NewInstallController(s.logger, s.store, s.clientID)
-	authController := controller.NewAuthController(s.logger, s.store, s.client, zoomAPI.NewZoomClient(s.clientID, s.clientSecret))
+	authController := controller.NewAuthController(s.namespace, s.logger, s.store, s.client, zoomAPI.NewZoomClient(s.clientID, s.clientSecret))
 	apiController := controller.NewAPIController(s.namespace, s.logger, s.client, zoomAPI.NewZoomApiClient())
 
 	s.mux.Group(func(r chi.Router) {
