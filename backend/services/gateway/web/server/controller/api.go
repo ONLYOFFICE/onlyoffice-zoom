@@ -79,27 +79,36 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
 		defer cancel()
 
+		ureq := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid)
 		var ures response.UserResponse
-		if err := c.client.Call(r.Context(), c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid), &ures); err != nil {
-			c.logger.Errorf("could not get user access info: %s", err.Error())
-			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-				rw.WriteHeader(http.StatusRequestTimeout)
+
+		if res, ok := c.client.Options().Cache.Get(ctx, &ureq); ok && res != nil {
+			ures = res.(response.UserResponse)
+		} else {
+			err := c.client.Call(r.Context(), c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid), &ures)
+			if err != nil {
+				c.logger.Errorf("could not get user access info: %s", err.Error())
+				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+					rw.WriteHeader(http.StatusRequestTimeout)
+					return
+				}
+
+				microErr := response.MicroError{}
+				if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
+					rw.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				rw.WriteHeader(microErr.Code)
 				return
 			}
-
-			microErr := response.MicroError{}
-			if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
-				rw.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			rw.WriteHeader(microErr.Code)
-			return
+			c.client.Options().Cache.Set(ctx, &ureq, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
 		}
 
 		c.logger.Debugf("got a user response: %v", ures)
 		res, err := c.zoomAPI.GetFilesFromMessages(ctx, ures.AccessToken, params)
 		if err != nil {
+			c.client.Options().Cache.Set(ctx, &ureq, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
 			c.logger.Errorf("could not get files messages: %s", err.Error())
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)
