@@ -70,14 +70,31 @@ func (c ConfigHandler) processConfig(user response.UserResponse, request request
 		t = "mobile"
 	}
 
+	ext := strings.ReplaceAll(filepath.Ext(request.Filename), ".", "")
+	fileType, err := constants.GetFileType(ext)
+	if err != nil {
+		return config, err
+	}
+
 	config = response.BuildConfigResponse{
 		Document: response.Document{
 			Key:   uuid.NewString(),
 			Title: request.Filename,
 			URL:   request.FileURL,
 			Permissions: response.Permissions{
-				Edit: false,
+				Edit:                    constants.IsExtensionEditable(ext),
+				Comment:                 true,
+				Download:                false,
+				Print:                   false,
+				Review:                  false,
+				Copy:                    true,
+				DeleteCommentAuthorOnly: true,
+				EditCommentAuthorOnly:   true,
+				FillForms:               true,
+				ModifyContentControl:    true,
+				ModifyFilter:            true,
 			},
+			FileType: fileType,
 		},
 		EditorConfig: response.EditorConfig{
 			User: response.User{
@@ -92,21 +109,9 @@ func (c ConfigHandler) processConfig(user response.UserResponse, request request
 			},
 			Lang: u.Language,
 		},
-		Type:  t,
-		Owner: true,
-	}
-
-	if strings.TrimSpace(request.Filename) != "" {
-		ext := strings.ReplaceAll(filepath.Ext(request.Filename), ".", "")
-		fileType, err := constants.GetFileType(ext)
-		if err != nil {
-			return config, err
-		}
-		config.Document.FileType = ext
-		config.Document.Permissions = response.Permissions{
-			Edit: constants.IsExtensionEditable(ext),
-		}
-		config.DocumentType = fileType
+		DocumentType: fileType,
+		Type:         t,
+		Owner:        true,
 	}
 
 	return config, nil
@@ -157,15 +162,10 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 
 			config.Session = true
 			config.Owner = session.Owner == payload.Uid
-			config.Document = response.Document{
-				FileType: ext,
-				Key:      session.DocKey,
-				Title:    session.Filename,
-				URL:      session.FileURL,
-				Permissions: response.Permissions{
-					Edit: constants.IsExtensionEditable(ext),
-				},
-			}
+			config.Document.Key = session.DocKey
+			config.Document.Title = session.Filename
+			config.Document.URL = session.FileURL
+			config.Document.Permissions.Edit = constants.IsExtensionEditable(ext)
 			config.DocumentType = fileType
 			config.EditorConfig.CallbackURL = fmt.Sprintf("%s?mid=%s&filename=%s", cbURL, payload.Mid, url.QueryEscape(session.Filename))
 			config.IssuedAt, config.ExpiresAt = time.Now().Add(-3*time.Second).UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
@@ -198,15 +198,10 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 				return nil, err
 			}
 
-			config.Document = response.Document{
-				FileType: ext,
-				Key:      session.DocKey,
-				Title:    session.Filename,
-				URL:      session.FileURL,
-				Permissions: response.Permissions{
-					Edit: constants.IsExtensionEditable(ext),
-				},
-			}
+			config.Document.Key = session.DocKey
+			config.Document.Title = session.Filename
+			config.Document.URL = session.FileURL
+			config.Document.Permissions.Edit = constants.IsExtensionEditable(ext)
 			config.DocumentType = fileType
 			config.IssuedAt, config.ExpiresAt = time.Now().UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {

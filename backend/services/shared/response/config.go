@@ -23,17 +23,17 @@ func (r BuildConfigResponse) ToJSON() []byte {
 }
 
 type Permissions struct {
-	Comment                 bool `json:"comment,omitempty"`
-	Copy                    bool `json:"copy,omitempty"`
-	DeleteCommentAuthorOnly bool `json:"deleteCommentAuthorOnly,omitempty"`
-	Download                bool `json:"download,omitempty"`
+	Comment                 bool `json:"comment"`
+	Copy                    bool `json:"copy"`
+	DeleteCommentAuthorOnly bool `json:"deleteCommentAuthorOnly"`
+	Download                bool `json:"download"`
 	Edit                    bool `json:"edit"`
-	EditCommentAuthorOnly   bool `json:"editCommentAuthorOnly,omitempty"`
-	FillForms               bool `json:"fillForms,omitempty"`
-	ModifyContentControl    bool `json:"modifyContentControl,omitempty"`
-	ModifyFilter            bool `json:"modifyFilter,omitempty"`
-	Print                   bool `json:"print,omitempty"`
-	Review                  bool `json:"review,omitempty"`
+	EditCommentAuthorOnly   bool `json:"editCommentAuthorOnly"`
+	FillForms               bool `json:"fillForms"`
+	ModifyContentControl    bool `json:"modifyContentControl"`
+	ModifyFilter            bool `json:"modifyFilter"`
+	Print                   bool `json:"print"`
+	Review                  bool `json:"review"`
 }
 
 type Document struct {
