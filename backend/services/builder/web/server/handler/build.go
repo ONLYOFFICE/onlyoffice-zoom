@@ -106,6 +106,7 @@ func (c ConfigHandler) processConfig(user response.UserResponse, request request
 				Goback: response.Goback{
 					RequestClose: true,
 				},
+				Plugins: false,
 			},
 			Lang: u.Language,
 		},
