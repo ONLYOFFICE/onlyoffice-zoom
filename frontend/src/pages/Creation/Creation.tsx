@@ -87,7 +87,7 @@ export const CreatePage: React.FC = () => {
           text={t("button.back") || "Back"}
           fullWidth
           onClick={() => {
-            navigate("/");
+            navigate(-1);
           }}
         />
       </div>
