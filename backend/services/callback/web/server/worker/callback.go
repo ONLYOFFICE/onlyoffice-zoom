@@ -59,19 +59,25 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	ferrChan := make(chan error)
 	serrChan := make(chan error)
 
+	req := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", msg.UID)
+
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
 		defer close(userChan)
 
 		c.logger.Debugf("trying to get an access token")
-		req := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", msg.UID)
 		var ures response.UserResponse
-		if err := c.client.Call(tctx, req, &ures, client.WithRetries(3), client.WithBackoff(func(ctx context.Context, req client.Request, attempts int) (time.Duration, error) {
-			return backoff.Do(attempts), nil
-		})); err != nil {
-			ferrChan <- err
-			return
+		if res, ok := c.client.Options().Cache.Get(ctx, &req); ok {
+			ures = res.(response.UserResponse)
+		} else {
+			if err := c.client.Call(tctx, req, &ures, client.WithRetries(3), client.WithBackoff(func(ctx context.Context, req client.Request, attempts int) (time.Duration, error) {
+				return backoff.Do(attempts), nil
+			})); err != nil {
+				ferrChan <- err
+				return
+			}
+			c.client.Options().Cache.Set(ctx, &req, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
 		}
 
 		c.logger.Debugf("populating user channel")
@@ -116,6 +122,7 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	ures := <-userChan
 	if err := c.zoomFilestore.UploadFile(tctx, msg.Url, ures.AccessToken, ures.ID, msg.Filename, <-sizeChan); err != nil {
 		c.logger.Errorf("could not upload an onlyoffice file to zoom: %s", err.Error())
+		c.client.Options().Cache.Set(ctx, &req, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
 		return err
 	}
 
