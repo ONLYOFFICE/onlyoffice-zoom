@@ -17,9 +17,9 @@ export function useFileSearch(query = "") {
       fetchFiles(query, pageParam, signal),
     getNextPageParam: (lastPage) =>
       lastPage.nextPage ? lastPage.nextPage : undefined,
-    staleTime: 2000,
-    cacheTime: 2500,
-    refetchInterval: 2000,
+    staleTime: 4000,
+    cacheTime: 4500,
+    refetchInterval: 4000,
   });
 
   return {
