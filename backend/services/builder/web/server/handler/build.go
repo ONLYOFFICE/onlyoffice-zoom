@@ -55,7 +55,7 @@ func NewConfigHandler(
 	}
 }
 
-func (c ConfigHandler) processConfig(user response.UserResponse, request request.BuildConfigRequest, ctx context.Context) (response.BuildConfigResponse, error) {
+func (c ConfigHandler) processConfig(ctx context.Context, user response.UserResponse, request request.BuildConfigRequest) (response.BuildConfigResponse, error) {
 	var config response.BuildConfigResponse
 
 	u, err := c.zoomAPI.GetZoomUser(ctx, user.AccessToken)
@@ -123,21 +123,27 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 
 	config, err, _ := c.group.Do(payload.Uid, func() (interface{}, error) {
 		req := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", payload.Uid)
-
 		var ures response.UserResponse
-		if err := c.client.Call(ctx, req, &ures); err != nil {
-			return nil, err
+
+		if res, ok := c.client.Options().Cache.Get(ctx, &req); ok {
+			ures = res.(response.UserResponse)
+		} else {
+			if err := c.client.Call(ctx, req, &ures); err != nil {
+				return nil, err
+			}
+			c.client.Options().Cache.Set(ctx, &req, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
 		}
 
-		config, err := c.processConfig(ures, payload, ctx)
+		config, err := c.processConfig(ctx, ures, payload)
 		if err != nil {
+			c.client.Options().Cache.Set(ctx, &req, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
 			return nil, err
 		}
 
 		cbURL := config.EditorConfig.CallbackURL
 		if payload.Mid == "" {
 			c.logger.Debugf("request has no mid")
-			config.IssuedAt, config.ExpiresAt = time.Now().UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
+			config.IssuedAt, config.ExpiresAt = time.Now().Add(-3*time.Second).UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
 			config.EditorConfig.CallbackURL = fmt.Sprintf("%s?filename=%s", cbURL, url.QueryEscape(payload.Filename))
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {
 				c.logger.Errorf("could not sign a docs config. Error: %s", err.Error())
@@ -204,7 +210,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 			config.Document.URL = session.FileURL
 			config.Document.Permissions.Edit = constants.IsExtensionEditable(ext)
 			config.DocumentType = fileType
-			config.IssuedAt, config.ExpiresAt = time.Now().UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
+			config.IssuedAt, config.ExpiresAt = time.Now().Add(-3*time.Second).UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {
 				c.logger.Errorf("could not sign a docs config for mid: %s. Error: %s", payload.Mid, err.Error())
 				return nil, err
