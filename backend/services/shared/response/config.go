@@ -57,8 +57,9 @@ type User struct {
 }
 
 type Customization struct {
-	Goback  Goback `json:"goback"`
-	Plugins bool   `json:"plugins"`
+	Goback        Goback `json:"goback"`
+	Plugins       bool   `json:"plugins"`
+	HideRightMenu bool   `json:"hideRightMenu"`
 }
 
 type Goback struct {

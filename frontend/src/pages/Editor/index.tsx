@@ -107,6 +107,8 @@ export const OnlyofficeEditorPage: React.FC = () => {
                     requestClose: true,
                     text: "Close",
                   },
+                  plugins: data.editorConfig.customization.plugins,
+                  hideRightMenu: data.editorConfig.customization.hideRightMenu,
                 },
               },
               token: data.token,

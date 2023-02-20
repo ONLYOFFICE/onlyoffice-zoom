@@ -94,7 +94,7 @@ func (c ConfigHandler) processConfig(ctx context.Context, user response.UserResp
 				ModifyContentControl:    true,
 				ModifyFilter:            true,
 			},
-			FileType: fileType,
+			FileType: ext,
 		},
 		EditorConfig: response.EditorConfig{
 			User: response.User{
@@ -106,7 +106,8 @@ func (c ConfigHandler) processConfig(ctx context.Context, user response.UserResp
 				Goback: response.Goback{
 					RequestClose: true,
 				},
-				Plugins: false,
+				Plugins:       false,
+				HideRightMenu: true,
 			},
 			Lang: u.Language,
 		},
