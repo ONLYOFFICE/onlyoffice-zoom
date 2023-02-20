@@ -22,7 +22,6 @@ type UserSelectHandler struct {
 	logger  log.Logger
 }
 
-// TODO: Distributed cache
 func NewUserSelectHandler(
 	service port.UserAccessService,
 	client client.Client,

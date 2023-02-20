@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 
@@ -182,7 +181,6 @@ func (s userService) UpdateUser(ctx context.Context, user domain.UserAccess) (do
 		defer close(atokenErrChan)
 		aToken, err := s.encryptor.Encrypt(user.AccessToken)
 		if err != nil {
-			fmt.Println(err.Error())
 			atokenErrChan <- err
 			return
 		}
@@ -196,7 +194,6 @@ func (s userService) UpdateUser(ctx context.Context, user domain.UserAccess) (do
 		defer close(rtokenErrChan)
 		rToken, err := s.encryptor.Encrypt(user.RefreshToken)
 		if err != nil {
-			fmt.Println(err.Error())
 			rtokenErrChan <- err
 			return
 		}

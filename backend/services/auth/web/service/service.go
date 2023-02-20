@@ -28,7 +28,7 @@ func NewService(opts ...Option) (*rpc.Service, error) {
 		rpc.WithRPC(server.NewAuthRPCServer(
 			server.WithClientID(options.Zoom.ClientID),
 			server.WithClientSecret(options.Zoom.ClientSecret),
-			server.WithPersistenceURL(options.Persistence.Url),
+			server.WithPersistence(options.Persistence.Url),
 			server.WithLogger(options.Logger),
 		)),
 		rpc.WithLogger(options.Logger),

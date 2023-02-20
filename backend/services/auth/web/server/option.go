@@ -9,10 +9,10 @@ type Option func(*Options)
 
 // Options defines the set of available options
 type Options struct {
-	ClientID       string
-	ClientSecret   string
-	PersistenceURL string
-	Logger         log.Logger
+	ClientID     string
+	ClientSecret string
+	Persistence  string
+	Logger       log.Logger
 }
 
 // newOptions initializes the options.
@@ -44,10 +44,10 @@ func WithClientSecret(val string) Option {
 	}
 }
 
-func WithPersistenceURL(val string) Option {
+func WithPersistence(val string) Option {
 	return func(o *Options) {
 		if val != "" {
-			o.PersistenceURL = val
+			o.Persistence = val
 		}
 	}
 }

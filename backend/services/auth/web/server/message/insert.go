@@ -2,6 +2,7 @@ package message
 
 import (
 	"context"
+	"time"
 
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/auth/web/server/core/domain"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/auth/web/server/core/port"
@@ -20,11 +21,13 @@ func BuildInsertMessageHandler(service port.UserAccessService) InsertMessageHand
 
 func (i InsertMessageHandler) GetHandler() func(context.Context, interface{}) error {
 	return func(ctx context.Context, payload interface{}) error {
+		tctx, cancel := context.WithTimeout(ctx, 4*time.Second)
+		defer cancel()
 		var user domain.UserAccess
 		if err := mapstructure.Decode(payload, &user); err != nil {
 			return err
 		}
-		_, err := i.service.UpdateUser(ctx, user)
+		_, err := i.service.UpdateUser(tctx, user)
 		return err
 	}
 }

@@ -23,8 +23,8 @@ func NewAuthRPCServer(opts ...Option) rpc.RPCEngine {
 	options := newOptions(opts...)
 
 	adptr := adapter.NewMemoryUserAdapter()
-	if options.PersistenceURL != "" {
-		adptr = adapter.NewMongoUserAdapter(options.PersistenceURL)
+	if options.Persistence != "" {
+		adptr = adapter.NewMongoUserAdapter(options.Persistence)
 	}
 
 	service := service.NewUserService(options.Logger, adptr, crypto.NewAesEncryptor([]byte(options.ClientSecret)))
