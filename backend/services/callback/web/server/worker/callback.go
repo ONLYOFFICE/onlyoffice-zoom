@@ -64,7 +64,6 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		defer close(userChan)
 
 		c.logger.Debugf("trying to get an access token")
 		var ures response.UserResponse
@@ -88,7 +87,6 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		defer close(sizeChan)
 
 		headResp, err := otelhttp.Head(tctx, msg.Url)
 		if err != nil {
@@ -107,24 +105,17 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 		c.logger.Debugf("successfully populated file size channel")
 	}()
 
-	c.logger.Debugf("worker is waiting for waitgroup")
-	wg.Wait()
-	c.logger.Debugf("worker waitgroup ok")
-
 	select {
 	case err := <-ferrChan:
 		return err
 	case err := <-serrChan:
 		return err
-	default:
+	case ures := <-userChan:
+		if err := c.zoomFilestore.UploadFile(tctx, msg.Url, ures.AccessToken, ures.ID, msg.Filename, <-sizeChan); err != nil {
+			c.logger.Errorf("could not upload an onlyoffice file to zoom: %s", err.Error())
+			c.client.Options().Cache.Set(ctx, &req, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
+			return err
+		}
+		return nil
 	}
-
-	ures := <-userChan
-	if err := c.zoomFilestore.UploadFile(tctx, msg.Url, ures.AccessToken, ures.ID, msg.Filename, <-sizeChan); err != nil {
-		c.logger.Errorf("could not upload an onlyoffice file to zoom: %s", err.Error())
-		c.client.Options().Cache.Set(ctx, &req, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
-		return err
-	}
-
-	return nil
 }
