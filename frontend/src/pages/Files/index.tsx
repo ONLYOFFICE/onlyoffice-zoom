@@ -54,16 +54,28 @@ export const FilesPage: React.FC = () => {
   };
 
   const initialLoad = isLoading && query === null;
-  const noFiles =
-    !isLoading && ((files?.length === 0 && query === null) || error);
+  const noFiles = !isLoading && files?.length === 0 && query === null;
   const tableLoad =
     (!isLoading && !error && files && files.length > 0) || query !== null;
 
   return (
     <>
-      {initialLoad && (
-        <div className="h-full w-full flex justify-center items-center">
-          <OnlyofficeSpinner />
+      {(initialLoad || error) && (
+        <div className="h-full w-full flex justify-center items-center flex-col">
+          {error ? (
+            <>
+              <OnlyofficeSpinner />
+              <div className="pt-5">
+                <OnlyofficeButton
+                  primary
+                  text={t("button.reload") || "Reload"}
+                  onClick={() => window.location.reload()}
+                />
+              </div>
+            </>
+          ) : (
+            <OnlyofficeSpinner />
+          )}
         </div>
       )}
       {noFiles && <WelcomePage />}

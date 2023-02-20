@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useSnapshot } from "valtio";
 import { motion } from "framer-motion";
 
 import { SessionPage } from "@pages/Session";
 import { CreatePage } from "@pages/Creation/Creation";
 
-import { useWebsocket } from "@context/WebsocketContext";
+import { SocketState } from "@context/MainContext";
 
 export const CreationPage: React.FC = () => {
   const [session, setSession] = useState(false);
-  const { ready, error, value } = useWebsocket();
+  const { ready, value } = useSnapshot(SocketState);
 
   useEffect(() => {
     try {
@@ -18,7 +19,7 @@ export const CreationPage: React.FC = () => {
     } catch (err) {
       setSession(false);
     }
-  }, [ready, error, value]);
+  }, [ready, value]);
 
   return (
     <motion.div

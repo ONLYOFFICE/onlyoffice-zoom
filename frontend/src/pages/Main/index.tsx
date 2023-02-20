@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useSnapshot } from "valtio";
 import { motion } from "framer-motion";
 
 import { FilesPage } from "@pages/Files";
 import { SessionPage } from "@pages/Session";
 
-import { useWebsocket } from "@context/WebsocketContext";
-import { useZoomLanguage } from "@context/LangContext";
-import { OnlyofficeSpinner } from "@components/spinner";
+import { SocketState } from "@context/MainContext";
 
 export const MainPage: React.FC = () => {
   const [session, setSession] = useState(false);
-  const { ready, error, value } = useWebsocket();
-  const { loading } = useZoomLanguage();
+  const { ready, value } = useSnapshot(SocketState);
   useEffect(() => {
     try {
       const sess = JSON.parse(value);
@@ -20,7 +18,7 @@ export const MainPage: React.FC = () => {
     } catch (err) {
       setSession(false);
     }
-  }, [ready, error, value]);
+  }, [ready, value]);
 
   return (
     <motion.div
@@ -29,13 +27,8 @@ export const MainPage: React.FC = () => {
       transition={{ duration: 0.04 }}
       className="h-full overflow-hidden"
     >
-      {loading && (
-        <div className="h-full flex justify-center items-center">
-          <OnlyofficeSpinner />
-        </div>
-      )}
-      {session && !loading && <SessionPage />}
-      {!session && !loading && <FilesPage />}
+      {session && <SessionPage />}
+      {!session && <FilesPage />}
     </motion.div>
   );
 };
