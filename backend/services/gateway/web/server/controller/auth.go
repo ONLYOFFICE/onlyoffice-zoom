@@ -25,6 +25,7 @@ type authController struct {
 	store     sessions.Store
 	client    client.Client
 	zoomAPI   zclient.ZoomAuth
+	timeout   int
 }
 
 func NewAuthController(
@@ -33,6 +34,7 @@ func NewAuthController(
 	store sessions.Store,
 	client client.Client,
 	zoomAPI zclient.ZoomAuth,
+	timeout int,
 ) *authController {
 	return &authController{
 		namespace: namespace,
@@ -40,12 +42,15 @@ func NewAuthController(
 		store:     store,
 		client:    client,
 		zoomAPI:   zoomAPI,
+		timeout:   timeout,
 	}
 }
 
 func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 	c.logger.Debugf("building a get auth endpoint with redirectURL: %s", redirectURL)
 	return func(rw http.ResponseWriter, r *http.Request) {
+		tctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+		defer cancel()
 		query := r.URL.Query()
 		code := strings.TrimSpace(query.Get("code"))
 
@@ -88,7 +93,7 @@ func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 			return
 		}
 
-		token, err := c.zoomAPI.GetZoomAccessToken(r.Context(), code, vefifier, redirectURL)
+		token, err := c.zoomAPI.GetZoomAccessToken(tctx, code, vefifier, redirectURL)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			c.logger.Errorf("get zoom access token error: %s", err.Error())
@@ -97,7 +102,7 @@ func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 
 		c.logger.Debugf("got zoom access token: %s", token.AccessToken)
 
-		user, err := c.zoomAPI.GetZoomUser(r.Context(), token.AccessToken)
+		user, err := c.zoomAPI.GetZoomUser(tctx, token.AccessToken)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			c.logger.Errorf("get zoom user error: %s", err.Error())
@@ -105,8 +110,7 @@ func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 		}
 
 		c.logger.Debugf("got zoom user with id: %s", user.ID)
-
-		if err := c.client.Publish(r.Context(), client.NewMessage("insert-auth", response.UserResponse{
+		if err := c.client.Publish(tctx, client.NewMessage("insert-auth", response.UserResponse{
 			ID:           user.ID,
 			AccessToken:  token.AccessToken,
 			RefreshToken: token.RefreshToken,
@@ -119,7 +123,7 @@ func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 			return
 		}
 
-		if deepLink, err := c.zoomAPI.GetDeeplink(r.Context(), token); err != nil {
+		if deepLink, err := c.zoomAPI.GetDeeplink(tctx, token); err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			c.logger.Errorf("get zoom deeplink error: %s", err.Error())
 			return
@@ -143,8 +147,10 @@ func (c authController) BuildPostDeauth() http.HandlerFunc {
 
 		c.logger.Debugf("got a deauth event: %v", event)
 
+		tctx, cancel := context.WithTimeout(r.Context(), time.Duration(c.timeout)*time.Millisecond)
+		defer cancel()
 		var res interface{}
-		if err := c.client.Call(r.Context(), c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserDeleteHandler.DeleteUser", event.Payload.Uid), &res); err != nil {
+		if err := c.client.Call(tctx, c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserDeleteHandler.DeleteUser", event.Payload.Uid), &res); err != nil {
 			c.logger.Errorf("could not delete user: %s", err.Error())
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)

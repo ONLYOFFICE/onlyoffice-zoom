@@ -23,6 +23,7 @@ type apiController struct {
 	logger    plog.Logger
 	client    client.Client
 	zoomAPI   zclient.ZoomApi
+	timeout   int
 }
 
 // TODO: Distributed cache
@@ -31,12 +32,14 @@ func NewAPIController(
 	logger plog.Logger,
 	client client.Client,
 	zoomAPI zclient.ZoomApi,
+	timeout int,
 ) *apiController {
 	return &apiController{
 		namespace: namespace,
 		logger:    logger,
 		client:    client,
 		zoomAPI:   zoomAPI,
+		timeout:   timeout,
 	}
 }
 
@@ -76,7 +79,7 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 			params["page_size"] = pageSize
 		}
 
-		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), time.Duration(c.timeout)*time.Millisecond)
 		defer cancel()
 
 		ureq := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid)
@@ -106,7 +109,10 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 		}
 
 		c.logger.Debugf("got a user response: %v", ures)
-		res, err := c.zoomAPI.GetFilesFromMessages(ctx, ures.AccessToken, params)
+		fctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		defer cancel()
+
+		res, err := c.zoomAPI.GetFilesFromMessages(fctx, ures.AccessToken, params)
 		if err != nil {
 			c.client.Options().Cache.Set(ctx, &ureq, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
 			c.logger.Errorf("could not get files messages: %s", err.Error())
@@ -157,7 +163,7 @@ func (c apiController) BuildGetConfig() http.HandlerFunc {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), time.Duration(c.timeout)*time.Millisecond)
 		defer cancel()
 
 		var resp response.BuildConfigResponse
@@ -201,10 +207,13 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 
 		ureq := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid)
 		var ures response.UserResponse
-		if res, ok := c.client.Options().Cache.Get(r.Context(), &ureq); ok && res != nil {
+
+		ctx, cancel := context.WithTimeout(r.Context(), time.Duration(c.timeout)*time.Millisecond)
+		defer cancel()
+		if res, ok := c.client.Options().Cache.Get(ctx, &ureq); ok && res != nil {
 			ures = res.(response.UserResponse)
 		} else {
-			err := c.client.Call(r.Context(), ureq, &ures)
+			err := c.client.Call(ctx, ureq, &ures)
 			if err != nil {
 				c.logger.Errorf("could not get user access info: %s", err.Error())
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
@@ -221,10 +230,10 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 				rw.WriteHeader(microErr.Code)
 				return
 			}
-			c.client.Options().Cache.Set(r.Context(), &ureq, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
+			c.client.Options().Cache.Set(ctx, &ureq, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
 		}
 
-		usr, err := c.zoomAPI.GetMe(r.Context(), ures.AccessToken)
+		usr, err := c.zoomAPI.GetMe(ctx, ures.AccessToken)
 		if err != nil {
 			c.client.Options().Cache.Set(r.Context(), &ureq, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
 			c.logger.Errorf("could not get me: %s", err.Error())
@@ -247,7 +256,7 @@ func (c apiController) BuildDeleteSession() http.HandlerFunc {
 		}
 
 		if zctx.Mid != "" {
-			rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
+			rctx, cancel := context.WithTimeout(r.Context(), 6*time.Second)
 			defer cancel()
 
 			if err := c.client.Publish(rctx, client.NewMessage("remove-owner-session", request.OwnerRemoveSessionRequest{

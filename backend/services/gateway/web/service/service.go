@@ -34,6 +34,7 @@ func NewService(opts ...Option) (*http.Service, error) {
 				server.WithClientSecret(options.Zoom.ClientSecret),
 				server.WithWebhookSecret(options.Zoom.WebhookSecret),
 				server.WithRedirectURI(options.Zoom.RedirectURI),
+				server.WithHystrixTimeout(options.Config.Resilience.CircuitBreaker.Timeout),
 			),
 		),
 		http.WithLogger(options.Logger),

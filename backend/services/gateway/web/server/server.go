@@ -17,16 +17,17 @@ import (
 )
 
 type ZoomHTTPService struct {
-	namespace     string
-	mux           *chi.Mux
-	ws            *melody.Melody
-	client        client.Client
-	logger        log.Logger
-	store         sessions.Store
-	clientID      string
-	clientSecret  string
-	webhookSecret string
-	redirectURI   string
+	namespace      string
+	mux            *chi.Mux
+	ws             *melody.Melody
+	client         client.Client
+	logger         log.Logger
+	store          sessions.Store
+	clientID       string
+	clientSecret   string
+	webhookSecret  string
+	redirectURI    string
+	hystrixTimeout int
 }
 
 // NewService initializes http server with options.
@@ -36,14 +37,15 @@ func NewServer(opts ...Option) ZoomHTTPService {
 	gin.SetMode(gin.ReleaseMode)
 
 	service := ZoomHTTPService{
-		namespace:     options.Namespace,
-		mux:           chi.NewRouter(),
-		logger:        options.Logger,
-		clientID:      options.ClientID,
-		clientSecret:  options.ClientSecret,
-		webhookSecret: options.WebhookSecret,
-		redirectURI:   options.RedirectURI,
-		store:         sessions.NewCookieStore([]byte(options.ClientSecret)),
+		namespace:      options.Namespace,
+		mux:            chi.NewRouter(),
+		logger:         options.Logger,
+		clientID:       options.ClientID,
+		clientSecret:   options.ClientSecret,
+		webhookSecret:  options.WebhookSecret,
+		redirectURI:    options.RedirectURI,
+		store:          sessions.NewCookieStore([]byte(options.ClientSecret)),
+		hystrixTimeout: options.HystrixTimout,
 	}
 
 	return service
@@ -77,8 +79,13 @@ func (s *ZoomHTTPService) InitializeRoutes() {
 	eventMiddleware := middleware.BuildHandleZoomEventMiddleware(s.logger, s.webhookSecret)
 
 	installController := controller.NewInstallController(s.logger, s.store, s.clientID)
-	authController := controller.NewAuthController(s.namespace, s.logger, s.store, s.client, zoomAPI.NewZoomClient(s.clientID, s.clientSecret))
-	apiController := controller.NewAPIController(s.namespace, s.logger, s.client, zoomAPI.NewZoomApiClient())
+	authController := controller.NewAuthController(
+		s.namespace, s.logger, s.store, s.client,
+		zoomAPI.NewZoomClient(s.clientID, s.clientSecret), s.hystrixTimeout,
+	)
+	apiController := controller.NewAPIController(
+		s.namespace, s.logger, s.client, zoomAPI.NewZoomApiClient(), s.hystrixTimeout,
+	)
 
 	s.mux.Group(func(r chi.Router) {
 		r.Use(chimiddleware.Recoverer)

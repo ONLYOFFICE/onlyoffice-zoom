@@ -15,6 +15,7 @@ type Options struct {
 	ClientSecret  string
 	WebhookSecret string
 	RedirectURI   string
+	HystrixTimout int
 }
 
 // newOptions initializes the options.
@@ -69,5 +70,11 @@ func WithWebhookSecret(val string) Option {
 func WithRedirectURI(val string) Option {
 	return func(o *Options) {
 		o.RedirectURI = val
+	}
+}
+
+func WithHystrixTimeout(val int) Option {
+	return func(o *Options) {
+		o.HystrixTimout = val
 	}
 }
