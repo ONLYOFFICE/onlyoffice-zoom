@@ -102,7 +102,7 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 		}
 
 		if body.Status == 1 && len(body.Users) == 1 && mid != "" {
-			rctx, cancel := context.WithTimeout(r.Context(), 4*time.Second)
+			rctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 			defer cancel()
 
 			req := c.client.NewRequest(fmt.Sprintf("%s:builder", c.namespace), "SessionHandler.RefreshSession", mid)
@@ -131,7 +131,7 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 
 		if body.Status == 4 {
 			if mid != "" {
-				rctx, cancel := context.WithTimeout(r.Context(), 8*time.Second)
+				rctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 				defer cancel()
 
 				if err := c.client.Publish(rctx, client.NewMessage("remove-session", mid)); err != nil {
@@ -143,7 +143,9 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 					return
 				}
 
-				time.Sleep(150 * time.Millisecond)
+				time.Sleep(200 * time.Millisecond)
+				rctx, cancel = context.WithTimeout(r.Context(), 5*time.Second)
+				defer cancel()
 				if err := c.client.Publish(rctx, client.NewMessage("notify-session", message.SessionMessage{
 					MID:       mid,
 					InSession: false,
@@ -173,7 +175,7 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 			serrChan := make(chan error)
 			var wg sync.WaitGroup
 
-			ctx, cancel := context.WithTimeout(r.Context(), 7*time.Second)
+			ctx, cancel := context.WithTimeout(r.Context(), 16*time.Second)
 			defer cancel()
 
 			mid := strings.TrimSpace(r.URL.Query().Get("mid"))

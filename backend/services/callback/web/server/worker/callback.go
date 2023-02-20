@@ -54,9 +54,10 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	c.logger.Debugf("got a new file %s upload job (%s)", msg.Filename, msg.UID)
 
 	var wg sync.WaitGroup
-	userChan := make(chan response.UserResponse, 1)
-	sizeChan := make(chan int64, 1)
-	errChan := make(chan error, 2)
+	userChan := make(chan response.UserResponse)
+	sizeChan := make(chan int64)
+	ferrChan := make(chan error)
+	serrChan := make(chan error)
 
 	go func() {
 		wg.Add(1)
@@ -69,7 +70,7 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 		if err := c.client.Call(tctx, req, &ures, client.WithRetries(3), client.WithBackoff(func(ctx context.Context, req client.Request, attempts int) (time.Duration, error) {
 			return backoff.Do(attempts), nil
 		})); err != nil {
-			errChan <- err
+			ferrChan <- err
 			return
 		}
 
@@ -85,13 +86,13 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 
 		headResp, err := otelhttp.Head(tctx, msg.Url)
 		if err != nil {
-			errChan <- err
+			serrChan <- err
 			return
 		}
 
 		size, err := strconv.ParseInt(headResp.Header.Get("Content-Length"), 10, 64)
 		if err != nil {
-			errChan <- err
+			serrChan <- err
 			return
 		}
 
@@ -105,7 +106,9 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	c.logger.Debugf("worker waitgroup ok")
 
 	select {
-	case err := <-errChan:
+	case err := <-ferrChan:
+		return err
+	case err := <-serrChan:
 		return err
 	default:
 	}
