@@ -11,7 +11,7 @@ import { OnlyofficeButton } from "@components/button";
 import { useBuildConfig } from "@hooks/useBuildConfig";
 import { removeSession } from "@services/session";
 
-import icon from "@assets/nofile.svg";
+import Icon from "@assets/nofile.svg";
 
 const onEditor = () => {
   const loader = document.getElementById("eloader");
@@ -65,7 +65,7 @@ export const OnlyofficeEditorPage: React.FC = () => {
       )}
       {!!error && (
         <div className="w-screen h-screen flex justify-center flex-col items-center mb-1">
-          <img src={icon} alt="error-icon" />
+          <Icon />
           <OnlyofficeError
             text={
               t("editor.error") ||
