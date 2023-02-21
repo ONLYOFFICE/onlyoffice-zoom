@@ -13,7 +13,7 @@ import { OnlyofficeNoFile } from "@components/nofile";
 
 import { useFileSearch } from "@hooks/useFileSearch";
 
-import { formatBytes, getFileIcon, isFileSupported } from "@utils/file";
+import { formatBytes, isFileSupported } from "@utils/file";
 
 import { File } from "src/types/file";
 
@@ -116,7 +116,6 @@ export const FilesPage: React.FC = () => {
                     return (
                       <div key={file.file_id} ref={lastItem}>
                         <OnlyofficeFile
-                          icon={getFileIcon(file.file_name)}
                           name={file.file_name}
                           time={new Date(file.timestamp).toLocaleString()}
                           size={formatBytes(+file.file_size)}
@@ -129,7 +128,6 @@ export const FilesPage: React.FC = () => {
                   return (
                     <div key={file.file_id}>
                       <OnlyofficeFile
-                        icon={getFileIcon(file.file_name)}
                         name={file.file_name}
                         time={new Date(file.timestamp).toLocaleString()}
                         size={formatBytes(+file.file_size)}

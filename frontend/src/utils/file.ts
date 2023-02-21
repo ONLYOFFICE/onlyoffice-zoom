@@ -1,7 +1,7 @@
-import docx from "@assets/docx.svg";
-import pptx from "@assets/pptx.svg";
-import xls from "@assets/xls.svg";
-import notsupported from "@assets/nofile.svg";
+import Docx from "@assets/docx-icon.svg";
+import Pptx from "@assets/pptx-icon.svg";
+import Xlsx from "@assets/xlsx-icon.svg";
+import Notsupported from "@assets/unsupported-icon.svg";
 
 const DOCUMENT_EXTS = [
   "doc",
@@ -87,11 +87,11 @@ export const getFileType = (filename: string) => {
 export const getFileIcon = (filename: string) => {
   const e = getFileExt(filename).toLowerCase();
 
-  if (DOCUMENT_EXTS.includes(e)) return docx;
-  if (SPREADSHEET_EXTS.includes(e)) return xls;
-  if (PRESENTATION_EXTS.includes(e)) return pptx;
+  if (DOCUMENT_EXTS.includes(e)) return Docx;
+  if (SPREADSHEET_EXTS.includes(e)) return Xlsx;
+  if (PRESENTATION_EXTS.includes(e)) return Pptx;
 
-  return notsupported;
+  return Notsupported;
 };
 
 // TODO: Set proper defaults
