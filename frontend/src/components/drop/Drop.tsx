@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useDropzone, DropEvent, FileRejection } from "react-dropzone";
 import cx from "classnames";
 
-import upload from "@assets/upload.svg";
+import Upload from "@assets/upload.svg";
 
 type DragDropProps = {
   onDrop: <T extends File>(
@@ -72,7 +72,7 @@ export const OnlyofficeDragDrop: React.FC<DragDropProps> = ({
 
   return (
     <div className={`${style} w-full h-full`} {...getRootProps()}>
-      <img src={upload} alt="upload" />
+      <Upload />
       {error && (
         <span className="font-sans font-semibold text-sm text-center">
           {errorText}
