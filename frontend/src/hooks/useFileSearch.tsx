@@ -16,7 +16,10 @@ export function useFileSearch(query = "") {
     queryFn: ({ pageParam = "", signal }) =>
       fetchFiles(query, pageParam, signal),
     getNextPageParam: (lastPage) =>
-      lastPage.nextPage ? lastPage.nextPage : undefined,
+      lastPage?.next_page_token &&
+      lastPage?.messages?.length === lastPage?.page_size
+        ? lastPage.next_page_token
+        : undefined,
     staleTime: 4000,
     cacheTime: 4500,
     refetchInterval: 4000,
@@ -24,7 +27,7 @@ export function useFileSearch(query = "") {
 
   return {
     files: data?.pages
-      .map((page) => page.response)
+      .map((page) => page.messages)
       .filter(Boolean)
       .flat(),
     isLoading,

@@ -24,5 +24,5 @@ export const fetchFiles = async (
     signal,
   });
 
-  return { response: res.data.messages, nextPage: res.data.next_page_token };
+  return res.data;
 };
