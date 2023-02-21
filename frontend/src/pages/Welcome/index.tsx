@@ -12,7 +12,7 @@ export const WelcomePage: React.FC = () => {
   return (
     <>
       <div className="flex flex-col justify-center items-center h-3/4 px-8">
-        <div className="max-w-[363px]">
+        <div className="max-w-[363px] z-50">
           <OnlyofficeMainHeader
             title={t("welcome.title") || "Welcome to ONLYOFFICE!"}
             subtitle={

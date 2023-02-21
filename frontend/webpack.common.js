@@ -30,15 +30,7 @@ module.exports = {
             },
             {
                 test: /\.svg$/,
-                use: [
-                    {
-                        loader: "svg-url-loader",
-                        options: {
-                            limit: 10240,
-                            iesafe: true,
-                        },
-                    },
-                ],
+                use: ['@svgr/webpack'],
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf)$/i,

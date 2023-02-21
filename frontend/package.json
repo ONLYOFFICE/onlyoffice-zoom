@@ -36,6 +36,7 @@
     "npm": ">=8.11.0"
   },
   "devDependencies": {
+    "@svgr/webpack": "^6.5.1",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@types/jest": "^29.2.0",
@@ -69,7 +70,6 @@
     "postcss": "^8.4.18",
     "postcss-loader": "^7.0.1",
     "style-loader": "^3.3.1",
-    "svg-url-loader": "^8.0.0",
     "tailwindcss": "^3.1.8",
     "ts-jest": "^29.0.3",
     "ts-loader": "^9.4.1",
