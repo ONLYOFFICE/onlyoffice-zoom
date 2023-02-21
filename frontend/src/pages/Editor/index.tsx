@@ -58,7 +58,10 @@ export const OnlyofficeEditorPage: React.FC = () => {
               primary
               text={t("button.cancel") || "Cancel"}
               fullWidth
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                removeSession();
+                navigate(-1);
+              }}
             />
           </div>
         </div>
@@ -76,7 +79,10 @@ export const OnlyofficeEditorPage: React.FC = () => {
             <OnlyofficeButton
               primary
               text={t("button.back") || "Go back"}
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                removeSession();
+                navigate(-1);
+              }}
             />
           </div>
         </div>
