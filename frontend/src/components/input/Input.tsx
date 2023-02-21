@@ -49,6 +49,7 @@ export const OnlyofficeInput: React.FC<InputProps> = ({
         value={value}
         placeholder={placeholder}
         className={istyle}
+        style={{ outline: "none" }}
         required
         autoCorrect={autocomplete ? undefined : "off"}
         autoComplete={autocomplete ? undefined : "off"}
