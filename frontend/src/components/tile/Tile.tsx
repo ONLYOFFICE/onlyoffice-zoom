@@ -2,8 +2,8 @@ import React from "react";
 import cx from "classnames";
 
 type TileProps = {
-  icon: string;
   text: string;
+  icon: React.ReactNode;
   size?: "xs" | "sm";
   selected?: boolean;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
@@ -11,8 +11,8 @@ type TileProps = {
 };
 
 export const OnlyofficeTile: React.FC<TileProps> = ({
-  icon,
   text,
+  icon,
   size = "xs",
   selected = false,
   onClick,
@@ -45,12 +45,8 @@ export const OnlyofficeTile: React.FC<TileProps> = ({
       onKeyDown={onKeyDown}
     >
       <div className="flex items-center justify-center px-1 py-1">
-        <div className="relative flex items-end">
-          <img
-            className="max-w-fit max-h-fit overflow-hidden select-none"
-            src={icon}
-            alt={text}
-          />
+        <div className="relative flex items-end max-w-fit max-h-fit overflow-hidden select-none">
+          {icon}
         </div>
       </div>
       <div className="w-full flex items-center justify-center overflow-hidden">

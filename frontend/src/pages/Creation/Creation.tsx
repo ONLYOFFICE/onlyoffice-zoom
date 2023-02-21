@@ -9,9 +9,9 @@ import { OnlyofficeButton } from "@components/button";
 
 import { getCreateFileUrl } from "@utils/file";
 
-import docx from "@assets/docx.svg";
-import pptx from "@assets/pptx.svg";
-import xls from "@assets/xls.svg";
+import Docx from "@assets/docx.svg";
+import Pptx from "@assets/pptx.svg";
+import Xlsx from "@assets/xlsx.svg";
 
 export const CreatePage: React.FC = () => {
   const { t } = useTranslation();
@@ -41,7 +41,7 @@ export const CreatePage: React.FC = () => {
       <div className="grid md:grid-cols-3 sm:grid-cols-2 xxsmall:grid-cols-1 md:gap-4 sm:gap-2 xsmall:gap-1 justify-center items-center content-start w-full overflow-y-scroll h-[calc(100%-2rem-4rem)] md:h-[calc(100%-3rem-6rem-6rem)] px-5 md:px-0 no-scrollbar">
         <div className="sm:flex sm:justify-center sm:items-center">
           <OnlyofficeTile
-            icon={docx}
+            icon={<Docx />}
             text={t("creation.tile.document") || "Document"}
             onClick={() => handleChangeFile("docx")}
             onKeyDown={() => handleChangeFile("docx")}
@@ -50,7 +50,7 @@ export const CreatePage: React.FC = () => {
         </div>
         <div className="sm:flex sm:justify-center sm:items-center">
           <OnlyofficeTile
-            icon={xls}
+            icon={<Xlsx />}
             text={t("creation.tile.spreadsheet") || "Spreadsheet"}
             onClick={() => handleChangeFile("xlsx")}
             onKeyDown={() => handleChangeFile("xlsx")}
@@ -59,7 +59,7 @@ export const CreatePage: React.FC = () => {
         </div>
         <div className="sm:flex sm:justify-center sm:items-center">
           <OnlyofficeTile
-            icon={pptx}
+            icon={<Pptx />}
             text={t("creation.tile.presentation") || "Presentation"}
             onClick={() => handleChangeFile("pptx")}
             onKeyDown={() => handleChangeFile("pptx")}
