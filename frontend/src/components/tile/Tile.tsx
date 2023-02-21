@@ -23,7 +23,7 @@ export const OnlyofficeTile: React.FC<TileProps> = ({
     "transition duration-100 ease-linear": true,
     "w-56 h-36": true,
     "max-h-36 flex flex-col justify-center": true,
-    "hover:-translate-y-[0.125rem] hover:shadow-xl cursor-pointer": !selected,
+    "hover:shadow-xl cursor-pointer": !selected,
     "bg-white": !selected,
     "bg-gray-100 border": selected,
   });
