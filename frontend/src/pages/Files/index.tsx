@@ -100,7 +100,7 @@ export const FilesPage: React.FC = () => {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <div className="px-5 overflow-scroll h-[calc(100%-3rem-1rem)] md:justify-between no-scrollbar">
+            <div className="px-5 overflow-scroll h-[calc(100%-3rem-1rem)] md:justify-between scroll-m-5">
               {!isLoading && (!!error || files?.length === 0) && (
                 <OnlyofficeNoFile
                   title={
@@ -120,7 +120,10 @@ export const FilesPage: React.FC = () => {
                           time={new Date(file.timestamp).toLocaleString()}
                           size={formatBytes(+file.file_size)}
                           onClick={() => openFile(file)}
-                          supported={isFileSupported(file.file_name)}
+                          supported={
+                            isFileSupported(file.file_name) &&
+                            +file.file_size <= 20000000
+                          }
                         />
                       </div>
                     );
@@ -132,7 +135,10 @@ export const FilesPage: React.FC = () => {
                         time={new Date(file.timestamp).toLocaleString()}
                         size={formatBytes(+file.file_size)}
                         onClick={() => openFile(file)}
-                        supported={isFileSupported(file.file_name)}
+                        supported={
+                          isFileSupported(file.file_name) &&
+                          +file.file_size <= 2000000
+                        }
                       />
                     </div>
                   );
