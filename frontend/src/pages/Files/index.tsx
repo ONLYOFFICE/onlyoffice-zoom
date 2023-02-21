@@ -100,7 +100,7 @@ export const FilesPage: React.FC = () => {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <div className="px-5 overflow-scroll h-[calc(100%-3rem-1rem)] md:justify-between scroll-m-5">
+            <div className="custom-scroll px-5 overflow-y-scroll overflow-x-hidden h-[calc(100%-3rem-1rem)] md:justify-between scroll-m-5">
               {!isLoading && (!!error || files?.length === 0) && (
                 <OnlyofficeNoFile
                   title={
@@ -146,7 +146,7 @@ export const FilesPage: React.FC = () => {
               {(isLoading || isFetchingNextPage) && (
                 <div
                   className={`relative w-full ${
-                    isLoading ? "h-full" : "h-fit"
+                    isLoading ? "h-[calc(100%-3rem-1rem)]" : "h-fit"
                   } my-5 flex justify-center items-center`}
                 >
                   <OnlyofficeSpinner />
