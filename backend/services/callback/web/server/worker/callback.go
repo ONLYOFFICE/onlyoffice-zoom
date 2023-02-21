@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
@@ -53,7 +52,6 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 
 	c.logger.Debugf("got a new file %s upload job (%s)", msg.Filename, msg.UID)
 
-	var wg sync.WaitGroup
 	userChan := make(chan response.UserResponse)
 	sizeChan := make(chan int64)
 	ferrChan := make(chan error)
@@ -62,9 +60,6 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	req := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", msg.UID)
 
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
 		c.logger.Debugf("trying to get an access token")
 		var ures response.UserResponse
 		if res, ok := c.client.Options().Cache.Get(ctx, &req); ok {
@@ -85,9 +80,6 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 	}()
 
 	go func() {
-		wg.Add(1)
-		defer wg.Done()
-
 		headResp, err := otelhttp.Head(tctx, msg.Url)
 		if err != nil {
 			serrChan <- err
@@ -107,8 +99,10 @@ func (c callbackWorker) UploadFile(ctx context.Context, payload []byte) error {
 
 	select {
 	case err := <-ferrChan:
+		c.logger.Warnf("could not upload file: %s", err.Error())
 		return err
 	case err := <-serrChan:
+		c.logger.Warnf("could not upload file: %s", err.Error())
 		return err
 	case ures := <-userChan:
 		if err := c.zoomFilestore.UploadFile(tctx, msg.Url, ures.AccessToken, ures.ID, msg.Filename, <-sizeChan); err != nil {
