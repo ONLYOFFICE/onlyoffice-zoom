@@ -8,7 +8,11 @@ export const OnlyofficeNavbar: React.FC<NavbarProps> = ({ onClick }) => (
   <nav className="bg-onlyoffice w-full flex relative justify-between items-center mx-auto px-4 h-12">
     <div className="inline-flex">
       <button type="button" onClick={onClick}>
-        <div className="md:block">
+        <div
+          className={`md:block ${
+            onClick ? "cursor-pointer" : "cursor-default"
+          }`}
+        >
           <svg
             width="150"
             height="28"

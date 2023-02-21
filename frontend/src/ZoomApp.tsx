@@ -8,7 +8,6 @@ import {
   Route,
   Navigate,
   useLocation,
-  useNavigate,
 } from "react-router-dom";
 
 import { OnlyofficeBasicLayoutContainer } from "@layouts/container";
@@ -38,7 +37,6 @@ const queryClient = new QueryClient();
 
 const LazyRoutes: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { ready, error } = useMainContext();
   const { error: socketError } = useSnapshot(SocketState);
   if (ready && !location.pathname.includes("editor") && (error || socketError))
@@ -72,9 +70,7 @@ const LazyRoutes: React.FC = () => {
           <Route
             index
             element={
-              <OnlyofficeBasicLayoutContainer
-                onNavbarClick={() => navigate("/")}
-              >
+              <OnlyofficeBasicLayoutContainer>
                 <React.Suspense fallback={<CenteredOnlyofficeSpinner />}>
                   <MainPage />
                 </React.Suspense>
@@ -84,9 +80,7 @@ const LazyRoutes: React.FC = () => {
           <Route
             path="create"
             element={
-              <OnlyofficeBasicLayoutContainer
-                onNavbarClick={() => navigate("/")}
-              >
+              <OnlyofficeBasicLayoutContainer>
                 <React.Suspense fallback={<CenteredOnlyofficeSpinner />}>
                   <CreationPage />
                 </React.Suspense>
