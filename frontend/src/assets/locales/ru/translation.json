@@ -13,7 +13,7 @@
     "creation.newfile": "Новый документ",
     "creation.title": "Создать с помощью ONLYOFFICE",
     "creation.input": "Заголовок",
-    "creation.input.error": "Пожалуйста, заполните это поле",
+    "creation.input.error": "File name must contain have 0-200 characters",
     "creation.tile.document": "Документ",
     "creation.tile.spreadsheet": "Электронная таблица",
     "creation.tile.presentation": "Презентация",
