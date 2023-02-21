@@ -22,7 +22,8 @@ import {
 import { OnlyofficeError } from "@components/error";
 import { OnlyofficeButton } from "@components/button";
 
-import icon from "@assets/nofile.svg";
+import BackgroundError from "@assets/background-error.svg";
+import { OnlyofficeSubtitle } from "@components/title";
 
 const MainPage = React.lazy(() => import("@pages/Main"));
 const CreationPage = React.lazy(() => import("@pages/Creation"));
@@ -44,14 +45,19 @@ const LazyRoutes: React.FC = () => {
       <OnlyofficeBasicLayoutContainer>
         <React.Suspense fallback={<CenteredOnlyofficeSpinner />}>
           <div className="w-screen h-screen flex justify-center flex-col items-center mb-1">
-            <img src={icon} alt="error-icon" />
-            <OnlyofficeError
+            <div className="absolute flex justify-center items-center w-screen h-screen">
+              <BackgroundError />
+            </div>
+            <div className="pb-5">
+              <OnlyofficeError text={t("context.error.title") || "Error"} />
+            </div>
+            <OnlyofficeSubtitle
               text={
-                t("context.error") ||
-                "Could not fetch user information or establish a new websocket connection"
+                t("context.error.text") ||
+                "Something went wrong. Please reload the page or contact the site administrator."
               }
             />
-            <div className="pt-5">
+            <div className="pt-5 z-[100]">
               <OnlyofficeButton
                 primary
                 text={t("button.reload") || "Reload"}
