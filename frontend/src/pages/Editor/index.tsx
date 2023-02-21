@@ -45,7 +45,7 @@ export const OnlyofficeEditorPage: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {!error && (
+      {(isLoading || (!data && !error)) && (
         <div
           id="eloader"
           className="relative w-screen h-screen flex flex-col small:justify-between justify-center items-center transition duration-250 ease-linear"
@@ -90,7 +90,7 @@ export const OnlyofficeEditorPage: React.FC = () => {
       {validConfig && process.env.DOC_SERVER && (
         <div
           id="editor"
-          className="w-screen h-screen opacity-0 transition duration-250 ease-linear"
+          className="w-screen h-screen opacity-0 transition duration-100 ease-linear overflow-hidden"
         >
           <DocumentEditor
             id="docxEditor"
