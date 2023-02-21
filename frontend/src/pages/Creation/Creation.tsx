@@ -73,7 +73,7 @@ export const CreatePage: React.FC = () => {
       <div className="relative h-16 px-5 md:px-0">
         <OnlyofficeButton
           text={t("button.create") || "Create with ONLYOFFICE"}
-          disabled={!fileType || !file || file.length >= 200}
+          disabled={!fileType || !file || file.length > 200}
           fullWidth
           primary
           onClick={() => {
