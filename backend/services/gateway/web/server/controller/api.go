@@ -151,6 +151,8 @@ func (c apiController) BuildGetConfig() http.HandlerFunc {
 			return
 		}
 
+		fileName = strings.ReplaceAll(fileName, "\\", ":")
+		fileName = strings.ReplaceAll(fileName, "/", ":")
 		if fileName == "" {
 			rw.WriteHeader(http.StatusBadRequest)
 			c.logger.Error("could not extract file_name from URL Query")
