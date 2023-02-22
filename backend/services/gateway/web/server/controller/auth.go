@@ -16,6 +16,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/request"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/response"
 	"github.com/gorilla/sessions"
+	"github.com/mitchellh/mapstructure"
 	"go-micro.dev/v4/client"
 )
 
@@ -137,11 +138,18 @@ func (c authController) BuildGetAuth(redirectURL string) http.HandlerFunc {
 func (c authController) BuildPostDeauth() http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		c.logger.Debug("got a deauth request")
-		event, ok := r.Context().Value(security.ZoomContext{}).(request.DeauthorizationEventRequest)
+		event, ok := r.Context().Value(security.ZoomContext{}).(request.EventRequest)
 
 		if !ok {
 			rw.WriteHeader(http.StatusForbidden)
 			c.logger.Error("could not extract zoom deauth event from the context")
+			return
+		}
+
+		var deauthEvent request.DeauthorizationPayload
+		if err := mapstructure.Decode(event.Payload, &deauthEvent); err != nil {
+			rw.WriteHeader(http.StatusForbidden)
+			c.logger.Errorf("could not decode an event payload: %s", err.Error())
 			return
 		}
 
@@ -150,7 +158,7 @@ func (c authController) BuildPostDeauth() http.HandlerFunc {
 		tctx, cancel := context.WithTimeout(r.Context(), time.Duration(c.timeout)*time.Millisecond)
 		defer cancel()
 		var res interface{}
-		if err := c.client.Call(tctx, c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserDeleteHandler.DeleteUser", event.Payload.Uid), &res); err != nil {
+		if err := c.client.Call(tctx, c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserDeleteHandler.DeleteUser", deauthEvent.Uid), &res); err != nil {
 			c.logger.Errorf("could not delete user: %s", err.Error())
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)
@@ -167,7 +175,7 @@ func (c authController) BuildPostDeauth() http.HandlerFunc {
 			return
 		}
 
-		c.logger.Debugf("deleted user %s", event.Payload.Uid)
+		c.logger.Debugf("deleted user %s", deauthEvent.Uid)
 		rw.WriteHeader(http.StatusOK)
 	}
 }

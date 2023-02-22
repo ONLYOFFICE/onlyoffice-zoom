@@ -51,7 +51,7 @@ func BuildHandleZoomEventMiddleware(
 				return
 			}
 
-			var body request.DeauthorizationEventRequest
+			var body request.EventRequest
 			if err := json.Unmarshal(b, &body); err != nil {
 				logger.Errorf("could not unmarshal a request body: %s. Reason: %s", string(b), err.Error())
 				rw.WriteHeader(http.StatusInternalServerError)
