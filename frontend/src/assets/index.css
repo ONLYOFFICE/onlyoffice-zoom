@@ -28,6 +28,7 @@
 .custom-scroll::-webkit-scrollbar-thumb {
   background: #333333;
   opacity: 10%;
+  border-radius: 2.5px;
 }
 
 .table-shadow {
