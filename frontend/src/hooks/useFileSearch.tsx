@@ -20,9 +20,10 @@ export function useFileSearch(query = "") {
       lastPage?.messages?.length === lastPage?.page_size
         ? lastPage.next_page_token
         : undefined,
-    staleTime: 4000,
-    cacheTime: 4500,
-    refetchInterval: 4000,
+    staleTime: 7000,
+    cacheTime: 7500,
+    refetchInterval: 7000,
+    refetchIntervalInBackground: false,
   });
 
   return {
