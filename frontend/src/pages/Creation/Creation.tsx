@@ -79,7 +79,7 @@ export const CreatePage: React.FC = () => {
           onClick={() => {
             navigate(
               `/editor?file=${new Date().getTime()}&name=${`${
-                encodeURI(file.substring(0, 201)) || "sample"
+                encodeURIComponent(file.substring(0, 201)) || "sample"
               }.${fileType}`}&url=${getCreateFileUrl(fileType)}`
             );
           }}
