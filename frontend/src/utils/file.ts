@@ -1,6 +1,7 @@
 import Docx from "@assets/docx-icon.svg";
 import Pptx from "@assets/pptx-icon.svg";
 import Xlsx from "@assets/xlsx-icon.svg";
+import Supported from "@assets/supported-icon.svg";
 import Notsupported from "@assets/unsupported-icon.svg";
 
 const DOCUMENT_EXTS = [
@@ -87,9 +88,11 @@ export const getFileType = (filename: string) => {
 export const getFileIcon = (filename: string) => {
   const e = getFileExt(filename).toLowerCase();
 
-  if (DOCUMENT_EXTS.includes(e)) return Docx;
-  if (SPREADSHEET_EXTS.includes(e)) return Xlsx;
-  if (PRESENTATION_EXTS.includes(e)) return Pptx;
+  if (DOCUMENT_EXTS.includes(e) && EDITABLE_EXTS.includes(e)) return Docx;
+  if (SPREADSHEET_EXTS.includes(e) && EDITABLE_EXTS.includes(e)) return Xlsx;
+  if (PRESENTATION_EXTS.includes(e) && EDITABLE_EXTS.includes(e)) return Pptx;
+
+  if (OPENABLE_EXTS.includes(e)) return Supported;
 
   return Notsupported;
 };
