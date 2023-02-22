@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
+
 import { OnlyofficeSpinner } from "@components/spinner";
+
+import { OnlyofficeBasicLayoutContainer } from "@layouts/container";
 
 import ZoomApp from "./ZoomApp";
 import BrowserApp from "./BrowserApp";
@@ -24,7 +27,13 @@ function App() {
 
   return (
     <div className="w-full h-full flex justify-center items-center">
-      {loading && <OnlyofficeSpinner />}
+      {loading && (
+        <OnlyofficeBasicLayoutContainer>
+          <div className="w-full h-full flex justify-center items-center">
+            <OnlyofficeSpinner />
+          </div>
+        </OnlyofficeBasicLayoutContainer>
+      )}
       {!loading && zoom && <ZoomApp />}
       {!loading && !zoom && <BrowserApp />}
     </div>
