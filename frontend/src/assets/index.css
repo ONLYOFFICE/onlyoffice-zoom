@@ -6,13 +6,7 @@
   box-sizing: border-box;
   transition: all .3s ease-in-out;
   user-select: none;
-  /* -ms-overflow-style: none;
-  scrollbar-width: none; */
 }
-
-/* *::-webkit-scrollbar {
-  display: none;
-} */
 
 .custom-scroll::-webkit-scrollbar-button {
   display: none;
