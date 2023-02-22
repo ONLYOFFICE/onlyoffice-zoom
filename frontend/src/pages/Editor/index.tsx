@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { DocumentEditor } from "@onlyoffice/document-editor-react";
@@ -37,6 +37,12 @@ export const OnlyofficeEditorPage: React.FC = () => {
     params.get("url") ||
       "https://d2nlctn12v279m.cloudfront.net/assets/docs/samples/new.docx"
   );
+
+  useEffect(() => {
+    const onOffline = () => navigate(-1);
+    window.addEventListener("offline", onOffline);
+    return () => window.removeEventListener("offline", onOffline);
+  }, [navigate]);
 
   const validConfig = !error && !isLoading && data;
   return (
