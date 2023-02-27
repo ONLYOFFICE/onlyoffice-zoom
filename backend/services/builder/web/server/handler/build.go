@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"path/filepath"
@@ -20,6 +21,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/response"
 	"github.com/google/uuid"
 	"github.com/mileusna/useragent"
+	"go-micro.dev/v4/cache"
 	"go-micro.dev/v4/client"
 	"golang.org/x/sync/singleflight"
 )
@@ -28,6 +30,7 @@ type ConfigHandler struct {
 	namespace   string
 	logger      plog.Logger
 	client      client.Client
+	cache       cache.Cache
 	zoomAPI     zclient.ZoomAuth
 	service     port.SessionService
 	jwtManager  crypto.JwtManager
@@ -39,6 +42,7 @@ func NewConfigHandler(
 	namespace string,
 	logger plog.Logger,
 	client client.Client,
+	cache cache.Cache,
 	zoomAPI zclient.ZoomAuth,
 	service port.SessionService,
 	jwtManager crypto.JwtManager,
@@ -48,6 +52,7 @@ func NewConfigHandler(
 		namespace:   namespace,
 		logger:      logger,
 		client:      client,
+		cache:       cache,
 		zoomAPI:     zoomAPI,
 		service:     service,
 		jwtManager:  jwtManager,
@@ -126,25 +131,34 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 		req := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", payload.Uid)
 		var ures response.UserResponse
 
-		if res, ok := c.client.Options().Cache.Get(ctx, &req); ok {
-			ures = res.(response.UserResponse)
-		} else {
+		if res, _, err := c.cache.Get(ctx, payload.Uid); err == nil && res != nil {
+			if buf, ok := res.([]byte); ok {
+				if err := json.Unmarshal(buf, &ures); err != nil {
+					c.logger.Errorf("could not unmarshal cached value: %s", err.Error())
+				}
+			}
+		}
+
+		if ures.AccessToken == "" || ures.ID == "" {
 			if err := c.client.Call(ctx, req, &ures); err != nil {
 				return nil, err
 			}
-			c.client.Options().Cache.Set(ctx, &req, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
+
+			if err := c.cache.Put(ctx, payload.Uid, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6)); err != nil {
+				c.logger.Errorf("could not put a new cache entry: %s", err.Error())
+			}
 		}
 
 		config, err := c.processConfig(ctx, ures, payload)
 		if err != nil {
-			c.client.Options().Cache.Set(ctx, &req, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
+			c.cache.Delete(context.Background(), payload.Uid)
 			return nil, err
 		}
 
 		cbURL := config.EditorConfig.CallbackURL
 		if payload.Mid == "" {
 			c.logger.Debugf("request has no mid")
-			config.IssuedAt, config.ExpiresAt = time.Now().Add(-3*time.Second).UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
+			config.IssuedAt, config.ExpiresAt = 0, time.Now().Add(3*time.Minute).UnixMilli()
 			config.EditorConfig.CallbackURL = fmt.Sprintf("%s?filename=%s", cbURL, url.QueryEscape(payload.Filename))
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {
 				c.logger.Errorf("could not sign a docs config. Error: %s", err.Error())
@@ -176,7 +190,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 			config.Document.Permissions.Edit = constants.IsExtensionEditable(ext)
 			config.DocumentType = fileType
 			config.EditorConfig.CallbackURL = fmt.Sprintf("%s?mid=%s&filename=%s", cbURL, payload.Mid, url.QueryEscape(session.Filename))
-			config.IssuedAt, config.ExpiresAt = time.Now().Add(-3*time.Second).UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
+			config.IssuedAt, config.ExpiresAt = 0, time.Now().Add(3*time.Minute).UnixMilli()
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {
 				c.logger.Errorf("could not sign a docs config for mid: %s. Error: %s", payload.Mid, err.Error())
 				return nil, err
@@ -211,7 +225,7 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 			config.Document.URL = session.FileURL
 			config.Document.Permissions.Edit = constants.IsExtensionEditable(ext)
 			config.DocumentType = fileType
-			config.IssuedAt, config.ExpiresAt = time.Now().Add(-3*time.Second).UnixMilli(), time.Now().Add(3*time.Minute).UnixMilli()
+			config.IssuedAt, config.ExpiresAt = 0, time.Now().Add(3*time.Minute).UnixMilli()
 			if config.Token, err = c.jwtManager.Sign(config); err != nil {
 				c.logger.Errorf("could not sign a docs config for mid: %s. Error: %s", payload.Mid, err.Error())
 				return nil, err

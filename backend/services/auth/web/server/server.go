@@ -10,6 +10,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/auth/web/server/message"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/client"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/crypto"
+	"go-micro.dev/v4/cache"
 	mclient "go-micro.dev/v4/client"
 )
 
@@ -50,7 +51,7 @@ func (a AuthRPCServer) BuildMessageHandlers() []rpc.RPCMessageHandler {
 	}
 }
 
-func (a AuthRPCServer) BuildHandlers(client mclient.Client) []interface{} {
+func (a AuthRPCServer) BuildHandlers(client mclient.Client, cache cache.Cache) []interface{} {
 	return []interface{}{
 		handler.NewUserSelectHandler(a.service, client, a.zoomAPI, a.logger),
 		handler.NewUserDeleteHandler(a.service),

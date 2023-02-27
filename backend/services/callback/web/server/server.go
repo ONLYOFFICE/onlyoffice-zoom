@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	"go-micro.dev/v4/cache"
 	"go-micro.dev/v4/client"
 )
 
@@ -18,6 +19,7 @@ type CallbackService struct {
 	namespace     string
 	mux           *chi.Mux
 	client        client.Client
+	cache         cache.Cache
 	logger        log.Logger
 	jwtManager    crypto.JwtManager
 	worker        worker.BackgroundWorker
@@ -63,15 +65,16 @@ func NewServer(opts ...Option) CallbackService {
 }
 
 // NewHandler returns http server engine.
-func (s CallbackService) NewHandler(client client.Client) interface {
+func (s CallbackService) NewHandler(client client.Client, cache cache.Cache) interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 } {
-	return s.InitializeServer(client)
+	return s.InitializeServer(client, cache)
 }
 
 // InitializeServer sets all injected dependencies.
-func (s *CallbackService) InitializeServer(c client.Client) *chi.Mux {
+func (s *CallbackService) InitializeServer(c client.Client, cache cache.Cache) *chi.Mux {
 	s.client = c
+	s.cache = cache
 	s.worker.Register("callback-upload", workerh.NewCallbackWorker(s.namespace, c, s.uploadTimeout, s.logger).UploadFile)
 	s.InitializeRoutes()
 	s.worker.Run()

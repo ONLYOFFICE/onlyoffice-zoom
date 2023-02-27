@@ -10,6 +10,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/builder/web/server/message"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/client"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/crypto"
+	"go-micro.dev/v4/cache"
 	mclient "go-micro.dev/v4/client"
 	"go-micro.dev/v4/logger"
 )
@@ -68,9 +69,9 @@ func (a ConfigRPCServer) BuildMessageHandlers() []rpc.RPCMessageHandler {
 	}
 }
 
-func (a ConfigRPCServer) BuildHandlers(c mclient.Client) []interface{} {
+func (a ConfigRPCServer) BuildHandlers(c mclient.Client, cache cache.Cache) []interface{} {
 	return []interface{}{
-		handler.NewConfigHandler(a.namespace, a.logger, c, a.zoomAPI, a.service, a.jwtManager, a.callbackURL),
+		handler.NewConfigHandler(a.namespace, a.logger, c, cache, a.zoomAPI, a.service, a.jwtManager, a.callbackURL),
 		handler.NewSessionHandler(a.logger, a.service),
 	}
 }

@@ -13,6 +13,7 @@ import (
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/sessions"
 	"github.com/olahol/melody"
+	"go-micro.dev/v4/cache"
 	"go-micro.dev/v4/client"
 )
 
@@ -21,6 +22,7 @@ type ZoomHTTPService struct {
 	mux            *chi.Mux
 	ws             *melody.Melody
 	client         client.Client
+	cache          cache.Cache
 	logger         log.Logger
 	store          sessions.Store
 	clientID       string
@@ -57,15 +59,16 @@ func (s ZoomHTTPService) ApplyMiddleware(middlewares ...func(http.Handler) http.
 }
 
 // NewHandler returns http server engine.
-func (s ZoomHTTPService) NewHandler(client client.Client) interface {
+func (s ZoomHTTPService) NewHandler(client client.Client, cache cache.Cache) interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 } {
-	return s.InitializeServer(client)
+	return s.InitializeServer(client, cache)
 }
 
 // InitializeServer sets all injected dependencies.
-func (s *ZoomHTTPService) InitializeServer(c client.Client) *chi.Mux {
+func (s *ZoomHTTPService) InitializeServer(c client.Client, cache cache.Cache) *chi.Mux {
 	s.client = c
+	s.cache = cache
 	s.InitializeRoutes()
 	s.ws = melody.New()
 	s.ws.HandleConnect(ws.NewOnConnectHandler(s.namespace, s.clientSecret, s.ws, s.client))
@@ -84,7 +87,7 @@ func (s *ZoomHTTPService) InitializeRoutes() {
 		zoomAPI.NewZoomClient(s.clientID, s.clientSecret), s.hystrixTimeout,
 	)
 	apiController := controller.NewAPIController(
-		s.namespace, s.logger, s.client, zoomAPI.NewZoomApiClient(), s.hystrixTimeout,
+		s.namespace, s.logger, s.client, s.cache, zoomAPI.NewZoomApiClient(), s.hystrixTimeout,
 	)
 
 	s.mux.Group(func(r chi.Router) {

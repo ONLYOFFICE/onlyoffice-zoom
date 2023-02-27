@@ -15,6 +15,7 @@ import (
 	zclient "github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/client"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/request"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/response"
+	"go-micro.dev/v4/cache"
 	"go-micro.dev/v4/client"
 )
 
@@ -22,6 +23,7 @@ type apiController struct {
 	namespace string
 	logger    plog.Logger
 	client    client.Client
+	cache     cache.Cache
 	zoomAPI   zclient.ZoomApi
 	timeout   int
 }
@@ -31,6 +33,7 @@ func NewAPIController(
 	namespace string,
 	logger plog.Logger,
 	client client.Client,
+	cache cache.Cache,
 	zoomAPI zclient.ZoomApi,
 	timeout int,
 ) *apiController {
@@ -38,6 +41,7 @@ func NewAPIController(
 		namespace: namespace,
 		logger:    logger,
 		client:    client,
+		cache:     cache,
 		zoomAPI:   zoomAPI,
 		timeout:   timeout,
 	}
@@ -85,10 +89,14 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 		ureq := c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid)
 		var ures response.UserResponse
 
-		if res, ok := c.client.Options().Cache.Get(ctx, &ureq); ok && res != nil {
-			ures = res.(response.UserResponse)
-		} else {
-			err := c.client.Call(ctx, c.client.NewRequest(fmt.Sprintf("%s:auth", c.namespace), "UserSelectHandler.GetUser", zctx.Uid), &ures)
+		if res, _, err := c.cache.Get(ctx, zctx.Uid); err == nil && res != nil {
+			if buf, ok := res.([]byte); ok {
+				json.Unmarshal(buf, &ures)
+			}
+		}
+
+		if ures.AccessToken == "" || ures.ID == "" {
+			err := c.client.Call(ctx, ureq, &ures)
 			if err != nil {
 				c.logger.Errorf("could not get user access info: %s", err.Error())
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
@@ -105,7 +113,7 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 				rw.WriteHeader(microErr.Code)
 				return
 			}
-			c.client.Options().Cache.Set(ctx, &ureq, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
+			c.cache.Put(ctx, zctx.Uid, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
 		}
 
 		c.logger.Debugf("got a user response: %v", ures)
@@ -114,7 +122,7 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 
 		res, err := c.zoomAPI.GetFilesFromMessages(fctx, ures.AccessToken, params)
 		if err != nil {
-			c.client.Options().Cache.Set(fctx, &ureq, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
+			c.cache.Delete(context.Background(), zctx.Uid)
 			c.logger.Errorf("could not get files messages: %s", err.Error())
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)
@@ -212,9 +220,14 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 
 		ctx, cancel := context.WithTimeout(r.Context(), time.Duration(c.timeout)*time.Millisecond)
 		defer cancel()
-		if res, ok := c.client.Options().Cache.Get(ctx, &ureq); ok && res != nil {
-			ures = res.(response.UserResponse)
-		} else {
+
+		if res, _, err := c.cache.Get(ctx, zctx.Uid); err == nil && res != nil {
+			if buf, ok := res.([]byte); ok {
+				json.Unmarshal(buf, &ures)
+			}
+		}
+
+		if ures.AccessToken == "" || ures.ID == "" {
 			err := c.client.Call(ctx, ureq, &ures)
 			if err != nil {
 				c.logger.Errorf("could not get user access info: %s", err.Error())
@@ -232,12 +245,12 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 				rw.WriteHeader(microErr.Code)
 				return
 			}
-			c.client.Options().Cache.Set(ctx, &ureq, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
+			c.cache.Put(ctx, zctx.Uid, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
 		}
 
 		usr, err := c.zoomAPI.GetMe(ctx, ures.AccessToken)
 		if err != nil {
-			c.client.Options().Cache.Set(r.Context(), &ureq, nil, time.Duration(time.Now().Add(1*time.Second).Nanosecond()))
+			c.cache.Delete(context.Background(), zctx.Uid)
 			c.logger.Errorf("could not get me: %s", err.Error())
 			rw.WriteHeader(http.StatusUnauthorized)
 			return
