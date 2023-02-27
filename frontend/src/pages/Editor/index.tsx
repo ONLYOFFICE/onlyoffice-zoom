@@ -39,7 +39,12 @@ export const OnlyofficeEditorPage: React.FC = () => {
   );
 
   useEffect(() => {
-    const onOffline = () => navigate(-1);
+    const onOffline = () => {
+      const loader = document.getElementById("eloader");
+      if (loader && !loader.classList.contains("opacity-0")) {
+        navigate(-1);
+      }
+    };
     window.addEventListener("offline", onOffline);
     return () => window.removeEventListener("offline", onOffline);
   }, [navigate]);
@@ -47,11 +52,11 @@ export const OnlyofficeEditorPage: React.FC = () => {
   const validConfig = !error && !isLoading && data;
   return (
     <motion.div
-      className="w-screen h-screen"
+      className="w-screen h-screen overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {(isLoading || (!data && !error)) && (
+      {!error && (
         <div
           id="eloader"
           className="relative w-screen h-screen flex flex-col small:justify-between justify-center items-center transition duration-250 ease-linear"
