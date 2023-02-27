@@ -9,14 +9,14 @@ import (
 )
 
 type RemoveSessionMessageHandler struct {
-	logger  plog.Logger
 	service port.SessionService
+	logger  plog.Logger
 }
 
-func BuildRemoveSessionMessageHandler(logger plog.Logger, service port.SessionService) RemoveSessionMessageHandler {
+func BuildRemoveSessionMessageHandler(service port.SessionService, logger plog.Logger) RemoveSessionMessageHandler {
 	return RemoveSessionMessageHandler{
-		logger:  logger,
 		service: service,
+		logger:  logger,
 	}
 }
 

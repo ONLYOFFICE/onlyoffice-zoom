@@ -47,7 +47,7 @@ func NewConfigRPCServer(opts ...Option) rpc.RPCEngine {
 	return ConfigRPCServer{
 		namespace:   options.Namespace,
 		zoomAPI:     client.NewZoomClient(options.ClientID, options.ClientSecret),
-		service:     service.NewSessionService(options.Logger, sessionAdapter),
+		service:     service.NewSessionService(sessionAdapter, options.Logger),
 		jwtManager:  jwtManager,
 		logger:      options.Logger,
 		callbackURL: options.CallbackURL,
@@ -59,19 +59,19 @@ func (a ConfigRPCServer) BuildMessageHandlers() []rpc.RPCMessageHandler {
 		{
 			Topic:   "remove-session",
 			Queue:   "zoom-builder",
-			Handler: message.BuildRemoveSessionMessageHandler(a.logger, a.service).GetHandler(),
+			Handler: message.BuildRemoveSessionMessageHandler(a.service, a.logger).GetHandler(),
 		},
 		{
 			Topic:   "remove-owner-session",
 			Queue:   "zoom-builder",
-			Handler: message.BuildOwnerRemoveSessionMessageHandler(a.logger, a.service).GetHandler(),
+			Handler: message.BuildOwnerRemoveSessionMessageHandler(a.service, a.logger).GetHandler(),
 		},
 	}
 }
 
 func (a ConfigRPCServer) BuildHandlers(c mclient.Client, cache cache.Cache) []interface{} {
 	return []interface{}{
-		handler.NewConfigHandler(a.namespace, a.logger, c, cache, a.zoomAPI, a.service, a.jwtManager, a.callbackURL),
-		handler.NewSessionHandler(a.logger, a.service),
+		handler.NewConfigHandler(a.namespace, a.callbackURL, c, cache, a.zoomAPI, a.service, a.jwtManager, a.logger),
+		handler.NewSessionHandler(a.service, a.logger),
 	}
 }

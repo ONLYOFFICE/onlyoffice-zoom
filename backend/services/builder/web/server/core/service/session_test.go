@@ -33,7 +33,7 @@ func (m mockAdapter) DeleteSessionByMeetingID(ctx context.Context, mid string) e
 }
 
 func TestUserService(t *testing.T) {
-	service := NewSessionService(log.NewDefaultLogger(), mockAdapter{})
+	service := NewSessionService(mockAdapter{}, log.NewDefaultLogger())
 
 	t.Run("create session", func(t *testing.T) {
 		s, err := service.CreateSession(context.Background(), "meeting-uuid", session)

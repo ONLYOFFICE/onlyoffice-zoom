@@ -12,18 +12,18 @@ import (
 )
 
 type SessionHandler struct {
-	logger  plog.Logger
 	service port.SessionService
 	group   singleflight.Group
+	logger  plog.Logger
 }
 
 func NewSessionHandler(
-	logger plog.Logger,
 	service port.SessionService,
+	logger plog.Logger,
 ) SessionHandler {
 	return SessionHandler{
-		logger:  logger,
 		service: service,
+		logger:  logger,
 	}
 }
 

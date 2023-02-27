@@ -11,17 +11,17 @@ import (
 )
 
 type sessionService struct {
-	logger  plog.Logger
 	adapter port.SessionServiceAdapter
+	logger  plog.Logger
 }
 
 func NewSessionService(
-	logger plog.Logger,
 	adapter port.SessionServiceAdapter,
+	logger plog.Logger,
 ) port.SessionService {
 	return sessionService{
-		logger:  logger,
 		adapter: adapter,
+		logger:  logger,
 	}
 }
 

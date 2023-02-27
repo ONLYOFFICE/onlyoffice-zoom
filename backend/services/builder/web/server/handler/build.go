@@ -28,35 +28,35 @@ import (
 
 type ConfigHandler struct {
 	namespace   string
-	logger      plog.Logger
+	callbackURL string
 	client      client.Client
 	cache       cache.Cache
 	zoomAPI     zclient.ZoomAuth
 	service     port.SessionService
 	jwtManager  crypto.JwtManager
-	callbackURL string
 	group       singleflight.Group
+	logger      plog.Logger
 }
 
 func NewConfigHandler(
 	namespace string,
-	logger plog.Logger,
+	callbackURL string,
 	client client.Client,
 	cache cache.Cache,
 	zoomAPI zclient.ZoomAuth,
 	service port.SessionService,
 	jwtManager crypto.JwtManager,
-	callbackURL string,
+	logger plog.Logger,
 ) ConfigHandler {
 	return ConfigHandler{
 		namespace:   namespace,
-		logger:      logger,
+		callbackURL: callbackURL,
 		client:      client,
 		cache:       cache,
 		zoomAPI:     zoomAPI,
 		service:     service,
 		jwtManager:  jwtManager,
-		callbackURL: callbackURL,
+		logger:      logger,
 	}
 }
 
