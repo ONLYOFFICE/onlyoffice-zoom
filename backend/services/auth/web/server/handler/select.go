@@ -62,7 +62,9 @@ func (u UserSelectHandler) GetUser(ctx context.Context, uid *string, res *domain
 				ExpiresAt:    time.Now().Local().Add(time.Second * time.Duration(token.ExpiresIn-700)).UnixMilli(),
 			}
 
-			_, err := u.service.UpdateUser(ctx, access)
+			tctx, cancel := context.WithTimeout(ctx, 4*time.Second)
+			defer cancel()
+			_, err := u.service.UpdateUser(tctx, access)
 			if err != nil {
 				u.logger.Debugf("could not persist a new user's %s token. Reason: %s. Sending a fallback message!", *uid, err.Error())
 

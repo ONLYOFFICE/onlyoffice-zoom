@@ -15,20 +15,20 @@ import (
 var _ErrOperationTimeout = errors.New("user operation timeout")
 
 type userService struct {
-	logger    plog.Logger
 	adapter   port.UserAccessServiceAdapter
 	encryptor crypto.Encryptor
+	logger    plog.Logger
 }
 
 func NewUserService(
-	logger plog.Logger,
 	adapter port.UserAccessServiceAdapter,
 	encryptor crypto.Encryptor,
+	logger plog.Logger,
 ) port.UserAccessService {
 	return userService{
-		logger:    logger,
 		adapter:   adapter,
 		encryptor: encryptor,
+		logger:    logger,
 	}
 }
 

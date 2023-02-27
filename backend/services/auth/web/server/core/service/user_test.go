@@ -52,7 +52,7 @@ func (m mockAdapter) DeleteUserByID(ctx context.Context, uid string) error {
 }
 
 func TestUserService(t *testing.T) {
-	service := NewUserService(log.NewDefaultLogger(), mockAdapter{}, mockEncryptor{})
+	service := NewUserService(mockAdapter{}, mockEncryptor{}, log.NewDefaultLogger())
 
 	t.Run("save user", func(t *testing.T) {
 		assert.NoError(t, service.CreateUser(context.Background(), user))

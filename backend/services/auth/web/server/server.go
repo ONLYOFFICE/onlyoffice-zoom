@@ -28,7 +28,7 @@ func NewAuthRPCServer(opts ...Option) rpc.RPCEngine {
 		adptr = adapter.NewMongoUserAdapter(options.Persistence)
 	}
 
-	service := service.NewUserService(options.Logger, adptr, crypto.NewAesEncryptor([]byte(options.ClientSecret)))
+	service := service.NewUserService(adptr, crypto.NewAesEncryptor([]byte(options.ClientSecret)), options.Logger)
 	return AuthRPCServer{
 		service: service,
 		zoomAPI: client.NewZoomClient(options.ClientID, options.ClientSecret),

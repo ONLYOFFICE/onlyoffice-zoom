@@ -25,7 +25,7 @@ func (e mockEncryptor) Decrypt(ciphertext string) (string, error) {
 
 func TestSelectCaching(t *testing.T) {
 	adapter := adapter.NewMemoryUserAdapter()
-	service := service.NewUserService(log.NewDefaultLogger(), adapter, mockEncryptor{})
+	service := service.NewUserService(adapter, mockEncryptor{}, log.NewDefaultLogger())
 	zm := client.NewZoomClient("clientID", "clientSecret")
 
 	sel := NewUserSelectHandler(service, nil, zm, log.NewEmptyLogger())
