@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/cache"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/messaging"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/middleware"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/middleware/cors"
@@ -38,6 +39,11 @@ func NewService(opts ...Option) Service {
 	if options.Server == nil {
 		log.Fatal("http service expects to have an initialized http server")
 	}
+
+	cache := cache.NewCache(
+		cache.WithCacheType(options.CacheOptions.CacheType),
+		cache.WithSize(options.CacheOptions.Size),
+	)
 
 	registry := registry.NewRegistry(
 		registry.WithAddresses(options.RegistryOptions.Addresses...),
@@ -90,6 +96,7 @@ func NewService(opts ...Option) Service {
 			server.Name(strings.Join([]string{options.Namespace, options.Name}, ":")),
 			server.Address(options.Address),
 		)),
+		micro.Cache(cache),
 		micro.Registry(registry),
 		micro.Broker(broker),
 		micro.Client(client.NewClient(
@@ -151,7 +158,7 @@ func NewService(opts ...Option) Service {
 
 	if err := micro.RegisterHandler(
 		service.Server(),
-		options.Server.NewHandler(service.Options().Client),
+		options.Server.NewHandler(service.Options().Client, service.Options().Cache),
 	); err != nil {
 		log.Fatal("could not register http handler: ", err)
 	}

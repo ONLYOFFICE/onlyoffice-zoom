@@ -5,17 +5,19 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/cache"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/messaging"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/middleware/cors"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/registry"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/trace"
+	gcache "go-micro.dev/v4/cache"
 	"go-micro.dev/v4/client"
 )
 
 type ServerEngine interface {
 	ApplyMiddleware(middlewares ...func(http.Handler) http.Handler)
-	NewHandler(client client.Client) interface {
+	NewHandler(client client.Client, c gcache.Cache) interface {
 		ServeHTTP(w http.ResponseWriter, req *http.Request)
 	}
 }
@@ -40,6 +42,7 @@ type Options struct {
 	Logger                              log.Logger
 	Tracer                              trace.Options
 	CORS                                cors.Options
+	CacheOptions                        cache.Options
 	BrokerOptions                       messaging.Options
 	RegistryOptions                     registry.Options
 	Context                             context.Context
@@ -180,6 +183,13 @@ func WithServer(val ServerEngine) Option {
 func WithTracer(val trace.Options) Option {
 	return func(o *Options) {
 		o.Tracer = val
+	}
+}
+
+// WithCacheOptions sets cache configuration
+func WithCacheOptions(val cache.Options) Option {
+	return func(o *Options) {
+		o.CacheOptions = val
 	}
 }
 

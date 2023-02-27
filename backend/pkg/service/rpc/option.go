@@ -4,10 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/cache"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/log"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/messaging"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/registry"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/trace"
+	gcache "go-micro.dev/v4/cache"
 	"go-micro.dev/v4/client"
 )
 
@@ -19,7 +21,7 @@ type RPCMessageHandler struct {
 
 type RPCEngine interface {
 	BuildMessageHandlers() []RPCMessageHandler
-	BuildHandlers(client client.Client) []interface{}
+	BuildHandlers(client client.Client, cache gcache.Cache) []interface{}
 }
 
 // Option defines a single option.
@@ -40,6 +42,7 @@ type Options struct {
 	Server                              RPCEngine
 	Logger                              log.Logger
 	Tracer                              trace.Options
+	CacheOptions                        cache.Options
 	BrokerOptions                       messaging.Options
 	RegistryOptions                     registry.Options
 	Context                             context.Context
@@ -154,6 +157,13 @@ func WithCircuitBreakerErrorPercentThreshold(val int) Option {
 		if val > 0 {
 			o.CircuitBreakerErrorPercentThreshold = val
 		}
+	}
+}
+
+// WithCacheOptions sets cache configuration
+func WithCacheOptions(val cache.Options) Option {
+	return func(o *Options) {
+		o.CacheOptions = val
 	}
 }
 

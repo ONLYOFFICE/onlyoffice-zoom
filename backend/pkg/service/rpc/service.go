@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/cache"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/messaging"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/middleware/wrapper"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/registry"
@@ -38,6 +39,11 @@ func NewService(opts ...Option) Service {
 	if options.Server == nil {
 		log.Fatal("rpc service expects to have an initialized rpc server")
 	}
+
+	cache := cache.NewCache(
+		cache.WithCacheType(options.CacheOptions.CacheType),
+		cache.WithSize(options.CacheOptions.Size),
+	)
 
 	registry := registry.NewRegistry(
 		registry.WithAddresses(options.RegistryOptions.Addresses...),
@@ -95,6 +101,7 @@ func NewService(opts ...Option) Service {
 			server.Name(strings.Join([]string{options.Namespace, options.Name}, ":")),
 			server.Address(options.Address),
 		)),
+		micro.Cache(cache),
 		micro.Registry(registry),
 		micro.Broker(broker),
 		micro.Client(client.NewClient(
@@ -144,7 +151,7 @@ func NewService(opts ...Option) Service {
 		}
 	}
 
-	for _, handler := range options.Server.BuildHandlers(service.Client()) {
+	for _, handler := range options.Server.BuildHandlers(service.Client(), service.Options().Cache) {
 		if err := micro.RegisterHandler(service.Server(), handler); err != nil {
 			log.Fatalf("could not initialize rpc handlers: %s", err.Error())
 		}
