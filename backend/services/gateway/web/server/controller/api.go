@@ -21,29 +21,28 @@ import (
 
 type apiController struct {
 	namespace string
-	logger    plog.Logger
+	timeout   int
 	client    client.Client
 	cache     cache.Cache
 	zoomAPI   zclient.ZoomApi
-	timeout   int
+	logger    plog.Logger
 }
 
-// TODO: Distributed cache
 func NewAPIController(
 	namespace string,
-	logger plog.Logger,
+	timeout int,
 	client client.Client,
 	cache cache.Cache,
 	zoomAPI zclient.ZoomApi,
-	timeout int,
+	logger plog.Logger,
 ) *apiController {
 	return &apiController{
 		namespace: namespace,
-		logger:    logger,
+		timeout:   timeout,
 		client:    client,
 		cache:     cache,
 		zoomAPI:   zoomAPI,
-		timeout:   timeout,
+		logger:    logger,
 	}
 }
 
@@ -159,6 +158,7 @@ func (c apiController) BuildGetConfig() http.HandlerFunc {
 			return
 		}
 
+		// TODO: Move to utils
 		fileName = strings.ReplaceAll(fileName, "\\", ":")
 		fileName = strings.ReplaceAll(fileName, "/", ":")
 		if fileName == "" {

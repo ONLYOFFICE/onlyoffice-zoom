@@ -22,28 +22,28 @@ import (
 
 type authController struct {
 	namespace string
-	logger    plog.Logger
+	timeout   int
 	store     sessions.Store
 	client    client.Client
 	zoomAPI   zclient.ZoomAuth
-	timeout   int
+	logger    plog.Logger
 }
 
 func NewAuthController(
 	namespace string,
-	logger plog.Logger,
+	timeout int,
 	store sessions.Store,
 	client client.Client,
 	zoomAPI zclient.ZoomAuth,
-	timeout int,
+	logger plog.Logger,
 ) *authController {
 	return &authController{
 		namespace: namespace,
-		logger:    logger,
+		timeout:   timeout,
 		store:     store,
 		client:    client,
 		zoomAPI:   zoomAPI,
-		timeout:   timeout,
+		logger:    logger,
 	}
 }
 

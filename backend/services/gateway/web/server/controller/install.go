@@ -13,20 +13,20 @@ import (
 )
 
 type installController struct {
-	logger   plog.Logger
-	store    sessions.Store
 	clientID string
+	store    sessions.Store
+	logger   plog.Logger
 }
 
 func NewInstallController(
-	logger plog.Logger,
-	store sessions.Store,
 	clientID string,
+	store sessions.Store,
+	logger plog.Logger,
 ) *installController {
 	return &installController{
-		logger:   logger,
-		store:    store,
 		clientID: clientID,
+		store:    store,
+		logger:   logger,
 	}
 }
 

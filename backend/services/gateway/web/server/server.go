@@ -19,17 +19,17 @@ import (
 
 type ZoomHTTPService struct {
 	namespace      string
-	mux            *chi.Mux
-	ws             *melody.Melody
-	client         client.Client
-	cache          cache.Cache
-	logger         log.Logger
-	store          sessions.Store
 	clientID       string
 	clientSecret   string
 	webhookSecret  string
 	redirectURI    string
 	hystrixTimeout int
+	mux            *chi.Mux
+	ws             *melody.Melody
+	client         client.Client
+	cache          cache.Cache
+	store          sessions.Store
+	logger         log.Logger
 }
 
 // NewService initializes http server with options.
@@ -40,14 +40,14 @@ func NewServer(opts ...Option) ZoomHTTPService {
 
 	service := ZoomHTTPService{
 		namespace:      options.Namespace,
-		mux:            chi.NewRouter(),
-		logger:         options.Logger,
 		clientID:       options.ClientID,
 		clientSecret:   options.ClientSecret,
 		webhookSecret:  options.WebhookSecret,
 		redirectURI:    options.RedirectURI,
-		store:          sessions.NewCookieStore([]byte(options.ClientSecret)),
 		hystrixTimeout: options.HystrixTimout,
+		mux:            chi.NewRouter(),
+		store:          sessions.NewCookieStore([]byte(options.ClientSecret)),
+		logger:         options.Logger,
 	}
 
 	return service
@@ -81,13 +81,13 @@ func (s *ZoomHTTPService) InitializeRoutes() {
 	ctxMiddleware := middleware.BuildHandleZoomContextMiddleware(s.logger, s.clientSecret)
 	eventMiddleware := middleware.BuildHandleZoomEventMiddleware(s.logger, s.webhookSecret)
 
-	installController := controller.NewInstallController(s.logger, s.store, s.clientID)
+	installController := controller.NewInstallController(s.clientID, s.store, s.logger)
 	authController := controller.NewAuthController(
-		s.namespace, s.logger, s.store, s.client,
-		zoomAPI.NewZoomClient(s.clientID, s.clientSecret), s.hystrixTimeout,
+		s.namespace, s.hystrixTimeout, s.store, s.client,
+		zoomAPI.NewZoomClient(s.clientID, s.clientSecret), s.logger,
 	)
 	apiController := controller.NewAPIController(
-		s.namespace, s.logger, s.client, s.cache, zoomAPI.NewZoomApiClient(), s.hystrixTimeout,
+		s.namespace, s.hystrixTimeout, s.client, s.cache, zoomAPI.NewZoomApiClient(), s.logger,
 	)
 
 	s.mux.Group(func(r chi.Router) {

@@ -10,12 +10,12 @@ type Option func(*Options)
 // Options defines the set of available options
 type Options struct {
 	Namespace     string
-	Logger        log.Logger
 	ClientID      string
 	ClientSecret  string
 	WebhookSecret string
 	RedirectURI   string
 	HystrixTimout int
+	Logger        log.Logger
 }
 
 // newOptions initializes the options.
