@@ -56,14 +56,56 @@
           transform: rotate(360deg);
         }
       }
+
+      #main-reload {
+        display: inline-block;
+        background: #339dff;
+        color: #fff;
+        text-decoration: none;
+        font-size: 13px;
+        line-height: 38px;
+        border-radius: 50px;
+        -webkit-transition: all 0.3s;
+        transition: all 0.3s;
+        width: 170px;
+        text-align: center;
+        border: none;
+      }
     </style>
   </head>
   <body>
     <noscript> You need to enable JavaScript to run this app. </noscript>
     <div id="root" style="height: 100vh; width: 100vw">
-      <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
-        <div class="spinner" />
+      <div
+        style="
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+          height: 100%;
+          width: 100%;
+        "
+      >
+        <div style="display: flex; align-items: center; flex-direction: column">
+          <div class="spinner" />
+        </div>
+        <button
+          id="main-reload"
+          onclick="window.location.reload()"
+          style="visibility: hidden; margin-top: 1rem;"
+        >
+          Reload
+        </button>
       </div>
     </div>
   </body>
+  <script>
+    window.addEventListener("offline", () => {
+      const btn = document.getElementById("main-reload");
+      if (btn) {
+        btn.removeAttribute("disabled");
+        btn.style.visibility = "visible";
+      }
+    });
+  </script>
 </html>
