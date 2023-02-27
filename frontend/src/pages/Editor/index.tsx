@@ -95,10 +95,11 @@ export const OnlyofficeEditorPage: React.FC = () => {
           <div className="pt-5 z-[100]">
             <OnlyofficeButton
               primary
-              text={t("button.back") || "Go back"}
+              text={t("button.reload") || "Reload"}
               onClick={() => {
                 removeSession();
-                navigate(-1);
+                navigate("/");
+                window.location.reload();
               }}
             />
           </div>

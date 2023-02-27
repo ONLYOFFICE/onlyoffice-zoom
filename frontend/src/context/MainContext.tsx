@@ -88,7 +88,9 @@ export const MainProvider: React.FC<ProviderProps> = ({ children }) => {
       zoomSdk
         .getMeetingUUID()
         .then(() => {
-          socket = new ReconnectingWebSocket(urlProvider);
+          socket = new ReconnectingWebSocket(urlProvider, ["wss", "ws"], {
+            maxRetries: 5,
+          });
           socket.onopen = () => {
             SocketState.ready = true;
             SocketState.error = false;
@@ -100,7 +102,9 @@ export const MainProvider: React.FC<ProviderProps> = ({ children }) => {
             SocketState.value = event.data;
           };
           socket.onerror = () => {
-            SocketState.error = true;
+            if (socket?.retryCount === 5) {
+              SocketState.error = true;
+            }
           };
           rws.current = socket;
         })
