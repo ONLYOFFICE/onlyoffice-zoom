@@ -41,8 +41,8 @@ func (hs *HttpServer) Validate() error {
 }
 
 type CORS struct {
-	AllowedOrigins     []string `yaml:"origins" env:"ALLOWED_ORIGINS,overwrite"`
-	AllowedMethods     []string `yaml:"methods" env:"ALLOWED_METHODS,overwrite"`
-	AllowedHeaders     []string `yaml:"headers" env:"ALLOWED_HEADERS,overwrite"`
-	AllowedCredentials bool     `yaml:"credentials" env:"ALLOW_CREDENTIALS,overwrite"`
+	AllowedOrigins   []string `yaml:"origins" env:"ALLOWED_ORIGINS,overwrite"`
+	AllowedMethods   []string `yaml:"methods" env:"ALLOWED_METHODS,overwrite"`
+	AllowedHeaders   []string `yaml:"headers" env:"ALLOWED_HEADERS,overwrite"`
+	AllowCredentials bool     `yaml:"credentials" env:"ALLOW_CREDENTIALS,overwrite"`
 }
