@@ -12,22 +12,23 @@ import {
 
 import { OnlyofficeBasicLayoutContainer } from "@layouts/container";
 
+import { OnlyofficeError } from "@components/error";
+import { OnlyofficeButton } from "@components/button";
+import { OnlyofficeSubtitle } from "@components/title";
 import { OnlyofficeSpinner } from "@components/spinner";
+
+import { MainPage } from "@pages/Main";
+import { CreationPage } from "@pages/Creation";
+import { OnlyofficeEditorPage } from "@pages/Editor";
 
 import {
   MainProvider,
   SocketState,
   useMainContext,
 } from "@context/MainContext";
-import { OnlyofficeError } from "@components/error";
-import { OnlyofficeButton } from "@components/button";
 
 import BackgroundError from "@assets/background-error.svg";
-import { OnlyofficeSubtitle } from "@components/title";
 
-const MainPage = React.lazy(() => import("@pages/Main"));
-const CreationPage = React.lazy(() => import("@pages/Creation"));
-const OnlyofficeEditorPage = React.lazy(() => import("@pages/Editor"));
 const CenteredOnlyofficeSpinner = () => (
   <div className="w-full h-full flex justify-center items-center">
     <OnlyofficeSpinner />
@@ -77,9 +78,7 @@ const LazyRoutes: React.FC = () => {
             index
             element={
               <OnlyofficeBasicLayoutContainer>
-                <React.Suspense fallback={<CenteredOnlyofficeSpinner />}>
-                  <MainPage />
-                </React.Suspense>
+                <MainPage />
               </OnlyofficeBasicLayoutContainer>
             }
           />
@@ -87,20 +86,11 @@ const LazyRoutes: React.FC = () => {
             path="create"
             element={
               <OnlyofficeBasicLayoutContainer>
-                <React.Suspense fallback={<CenteredOnlyofficeSpinner />}>
-                  <CreationPage />
-                </React.Suspense>
+                <CreationPage />
               </OnlyofficeBasicLayoutContainer>
             }
           />
-          <Route
-            path="editor"
-            element={
-              <React.Suspense fallback={<OnlyofficeSpinner />}>
-                <OnlyofficeEditorPage />
-              </React.Suspense>
-            }
-          />
+          <Route path="editor" element={<OnlyofficeEditorPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
