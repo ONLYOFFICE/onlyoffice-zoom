@@ -13,7 +13,6 @@ type Option func(*Options)
 
 // Options defines the set of available options.
 type Options struct {
-	Logger     log.Logger
 	Config     config.HttpServer
 	Callback   shared.CallbackConfig
 	Onlyoffice shared.OnlyofficeConfig
@@ -21,6 +20,7 @@ type Options struct {
 	Broker     config.Broker
 	Registry   config.Registry
 	Worker     config.WorkerConfig
+	Logger     log.Logger
 	Context    context.Context
 }
 

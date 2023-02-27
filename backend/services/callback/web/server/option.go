@@ -11,21 +11,21 @@ type Option func(*Options)
 // Options defines the set of available options
 type Options struct {
 	Namespace     string
-	Logger        log.Logger
-	Worker        worker.WorkerOptions
 	DocSecret     string
 	MaxSize       int64
 	UploadTimeout int
+	Worker        worker.WorkerOptions
+	Logger        log.Logger
 }
 
 // newOptions initializes the options.
 func newOptions(opts ...Option) Options {
 	options := Options{
 		Namespace:     "onlyoffice",
-		Logger:        log.NewDefaultLogger(),
 		DocSecret:     "secret",
 		MaxSize:       2100000,
 		UploadTimeout: 10,
+		Logger:        log.NewDefaultLogger(),
 	}
 
 	for _, o := range opts {

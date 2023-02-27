@@ -22,29 +22,29 @@ import (
 type callbackController struct {
 	namespace     string
 	maxSize       int64
-	logger        plog.Logger
 	client        client.Client
 	enqueuer      worker.BackgroundEnqueuer
 	zoomFilestore zclient.ZoomFilestore
 	jwtManager    crypto.JwtManager
+	logger        plog.Logger
 }
 
 func NewCallbackController(
 	namespace string,
 	maxSize int64,
-	logger plog.Logger,
 	client client.Client,
 	enqueuer worker.BackgroundEnqueuer,
 	jwtManager crypto.JwtManager,
+	logger plog.Logger,
 ) *callbackController {
 	return &callbackController{
 		namespace:     namespace,
 		maxSize:       maxSize,
-		logger:        logger,
 		enqueuer:      enqueuer,
 		client:        client,
 		zoomFilestore: zclient.NewZoomFilestoreClient(logger),
 		jwtManager:    jwtManager,
+		logger:        logger,
 	}
 }
 

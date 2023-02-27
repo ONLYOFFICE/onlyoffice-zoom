@@ -59,7 +59,7 @@ func NewService(opts ...Option) (*http.Service, error) {
 			AllowedOrigins:   options.Config.CORS.AllowedOrigins,
 			AllowedMethods:   options.Config.CORS.AllowedMethods,
 			AllowedHeaders:   options.Config.CORS.AllowedHeaders,
-			AllowCredentials: options.Config.CORS.AllowedCredentials,
+			AllowCredentials: options.Config.CORS.AllowCredentials,
 		}),
 		http.WithBrokerOptions(messaging.NewOptions(
 			messaging.WithAddrs(options.Broker.Addrs...),

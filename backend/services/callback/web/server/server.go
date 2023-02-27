@@ -17,15 +17,15 @@ import (
 
 type CallbackService struct {
 	namespace     string
+	maxSize       int64
+	uploadTimeout int
 	mux           *chi.Mux
 	client        client.Client
 	cache         cache.Cache
-	logger        log.Logger
 	jwtManager    crypto.JwtManager
 	worker        worker.BackgroundWorker
 	enqueuer      worker.BackgroundEnqueuer
-	maxSize       int64
-	uploadTimeout int
+	logger        log.Logger
 }
 
 // ApplyMiddleware useed to apply http server middlewares.
@@ -52,13 +52,13 @@ func NewServer(opts ...Option) CallbackService {
 
 	service := CallbackService{
 		namespace:     options.Namespace,
+		maxSize:       options.MaxSize,
+		uploadTimeout: options.UploadTimeout,
 		mux:           chi.NewRouter(),
-		logger:        options.Logger,
 		jwtManager:    jwtManager,
 		worker:        worker.NewBackgroundWorker(wopts...),
 		enqueuer:      worker.NewBackgroundEnqueuer(wopts...),
-		maxSize:       options.MaxSize,
-		uploadTimeout: options.UploadTimeout,
+		logger:        options.Logger,
 	}
 
 	return service
@@ -83,7 +83,7 @@ func (s *CallbackService) InitializeServer(c client.Client, cache cache.Cache) *
 
 // InitializeRoutes builds all http routes.
 func (s *CallbackService) InitializeRoutes() {
-	callbackController := controller.NewCallbackController(s.namespace, s.maxSize, s.logger, s.client, s.enqueuer, s.jwtManager)
+	callbackController := controller.NewCallbackController(s.namespace, s.maxSize, s.client, s.enqueuer, s.jwtManager, s.logger)
 	s.mux.Group(func(r chi.Router) {
 		r.Use(chimiddleware.Recoverer)
 		r.NotFound(func(rw http.ResponseWriter, r *http.Request) {
