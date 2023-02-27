@@ -7,11 +7,12 @@ import { motion } from "framer-motion";
 import { OnlyofficeSpinner } from "@components/spinner";
 import { OnlyofficeError } from "@components/error";
 import { OnlyofficeButton } from "@components/button";
+import { OnlyofficeSubtitle } from "@components/title";
 
 import { useBuildConfig } from "@hooks/useBuildConfig";
 import { removeSession } from "@services/session";
 
-import Icon from "@assets/nofile.svg";
+import BackgroundError from "@assets/background-error.svg";
 
 const onEditor = () => {
   const loader = document.getElementById("eloader");
@@ -79,14 +80,19 @@ export const OnlyofficeEditorPage: React.FC = () => {
       )}
       {!!error && (
         <div className="w-screen h-screen flex justify-center flex-col items-center mb-1">
-          <Icon />
-          <OnlyofficeError
+          <div className="absolute flex justify-center items-center w-screen h-screen">
+            <BackgroundError />
+          </div>
+          <div className="pb-5">
+            <OnlyofficeError text={t("context.error.title") || "Error"} />
+          </div>
+          <OnlyofficeSubtitle
             text={
               t("editor.error") ||
               "Could not open the file. Something went wrong"
             }
           />
-          <div className="pt-5">
+          <div className="pt-5 z-[100]">
             <OnlyofficeButton
               primary
               text={t("button.back") || "Go back"}
