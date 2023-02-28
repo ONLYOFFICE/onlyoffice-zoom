@@ -16,7 +16,9 @@ import Xlsx from "@assets/xlsx.svg";
 export const CreatePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [file, setFile] = useState(t("creation.newfile") || "New Document");
+  const [file, setFile] = useState(
+    t("creation.newfile", "New Document") || "New Document"
+  );
   const [fileType, setFileType] = useState<"docx" | "pptx" | "xlsx">("docx");
   const handleChangeFile = (newType: "docx" | "pptx" | "xlsx") => {
     setFileType(newType);
@@ -25,13 +27,11 @@ export const CreatePage: React.FC = () => {
   return (
     <div className="relative w-full max-w-[720px] h-full flex flex-col my-0 mx-auto lg:pt-14 md:pt-7 pt-3">
       <div className="mx-5 md:mx-0 flex h-8 md:h-12 max-w-full truncate text-ellipsis items-center">
-        <OnlyofficeTitle
-          text={t("creation.title") || "Create with ONLYOFFICE"}
-        />
+        <OnlyofficeTitle text={t("creation.title", "Create with ONLYOFFICE")} />
       </div>
       <div className="px-5 md:px-0 pb-5 h-24">
         <OnlyofficeInput
-          text={t("creation.input") || "Title"}
+          text={t("creation.input", "Title")}
           value={file}
           onChange={(e) => setFile(e.target.value)}
           errorText={
@@ -45,7 +45,7 @@ export const CreatePage: React.FC = () => {
         <div className="sm:flex sm:justify-center sm:items-center">
           <OnlyofficeTile
             icon={<Docx />}
-            text={t("creation.tile.document") || "Document"}
+            text={t("creation.tile.document", "Document")}
             onClick={() => handleChangeFile("docx")}
             onKeyDown={() => handleChangeFile("docx")}
             selected={fileType === "docx"}
@@ -54,7 +54,7 @@ export const CreatePage: React.FC = () => {
         <div className="sm:flex sm:justify-center sm:items-center">
           <OnlyofficeTile
             icon={<Xlsx />}
-            text={t("creation.tile.spreadsheet") || "Spreadsheet"}
+            text={t("creation.tile.spreadsheet", "Spreadsheet")}
             onClick={() => handleChangeFile("xlsx")}
             onKeyDown={() => handleChangeFile("xlsx")}
             selected={fileType === "xlsx"}
@@ -63,7 +63,7 @@ export const CreatePage: React.FC = () => {
         <div className="sm:flex sm:justify-center sm:items-center">
           <OnlyofficeTile
             icon={<Pptx />}
-            text={t("creation.tile.presentation") || "Presentation"}
+            text={t("creation.tile.presentation", "Presentation")}
             onClick={() => handleChangeFile("pptx")}
             onKeyDown={() => handleChangeFile("pptx")}
             selected={fileType === "pptx"}
@@ -72,7 +72,7 @@ export const CreatePage: React.FC = () => {
       </div>
       <div className="relative h-16 px-5 md:px-0">
         <OnlyofficeButton
-          text={t("button.create") || "Create with ONLYOFFICE"}
+          text={t("button.create", "Create with ONLYOFFICE")}
           disabled={!fileType || !file || file.length > 200}
           fullWidth
           primary
@@ -87,7 +87,7 @@ export const CreatePage: React.FC = () => {
       </div>
       <div className="relative h-16 px-5 md:px-0">
         <OnlyofficeButton
-          text={t("button.back") || "Back"}
+          text={t("button.back", "Back")}
           fullWidth
           onClick={() => {
             navigate(-1);

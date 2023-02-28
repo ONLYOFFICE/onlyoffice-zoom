@@ -69,7 +69,7 @@ export const FilesPage: React.FC = () => {
         <div className="relative w-full max-w-[790px] h-full flex flex-col my-0 mx-auto md:py-10 pt-10 pb-0">
           <div className="w-full h-20 flex justify-center items-center px-5 pb-10">
             <OnlyofficeButton
-              text={t("button.create") || "Create with ONLYOFFICE"}
+              text={t("button.create", "Create with ONLYOFFICE")}
               primary
               fullWidth
               onClick={() => navigate("/create")}
@@ -77,11 +77,11 @@ export const FilesPage: React.FC = () => {
           </div>
           <div className="table-shadow pb-10 h-[calc(100%-5rem)]">
             <div className="flex items-center justify-center h-12 mx-5 max-w-full truncate text-ellipsis">
-              <OnlyofficeTitle text={t("files.title") || "My Zoom documents"} />
+              <OnlyofficeTitle text={t("files.title", "My Zoom documents")} />
             </div>
             <div className="flex h-12 px-5">
               <OnlyofficeSearchBar
-                placeholder={t("files.search") || "Search"}
+                placeholder={t("files.search", "Search") || "Search"}
                 value={query || ""}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -89,9 +89,7 @@ export const FilesPage: React.FC = () => {
             <div className="custom-scroll px-5 overflow-y-scroll overflow-x-hidden h-[calc(100%-3rem-1rem)] md:justify-between scroll-m-5">
               {!isLoading && files?.length === 0 && (
                 <OnlyofficeNoFile
-                  title={
-                    t("files.error.nofiles") || "Could not find zoom files"
-                  }
+                  title={t("files.error.nofiles", "Could not find zoom files")}
                 />
               )}
               {files &&

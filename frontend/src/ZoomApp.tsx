@@ -50,7 +50,7 @@ const LazyRoutes: React.FC = () => {
               <BackgroundError />
             </div>
             <div className="pb-5">
-              <OnlyofficeError text={t("context.error.title") || "Error"} />
+              <OnlyofficeError text={t("context.error.title", "Error")} />
             </div>
             <OnlyofficeSubtitle
               text={
@@ -61,7 +61,7 @@ const LazyRoutes: React.FC = () => {
             <div className="pt-5 z-[100]">
               <OnlyofficeButton
                 primary
-                text={t("button.reload") || "Reload"}
+                text={t("button.reload", "Reload")}
                 onClick={() => window.location.reload()}
               />
             </div>

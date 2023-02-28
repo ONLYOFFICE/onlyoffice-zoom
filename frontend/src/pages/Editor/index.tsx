@@ -68,7 +68,7 @@ export const OnlyofficeEditorPage: React.FC = () => {
           <div className="small:mb-5 small:px-5 small:w-full">
             <OnlyofficeButton
               primary
-              text={t("button.cancel") || "Cancel"}
+              text={t("button.cancel", "Cancel")}
               fullWidth
               onClick={() => {
                 removeSession();
@@ -84,18 +84,18 @@ export const OnlyofficeEditorPage: React.FC = () => {
             <BackgroundError />
           </div>
           <div className="pb-5">
-            <OnlyofficeError text={t("context.error.title") || "Error"} />
+            <OnlyofficeError text={t("context.error.title", "Error")} />
           </div>
           <OnlyofficeSubtitle
-            text={
-              t("editor.error") ||
+            text={t(
+              "editor.error",
               "Could not open the file. Something went wrong"
-            }
+            )}
           />
           <div className="pt-5 z-[100]">
             <OnlyofficeButton
               primary
-              text={t("button.reload") || "Reload"}
+              text={t("button.reload", "Reload")}
               onClick={() => {
                 removeSession();
                 navigate("/");

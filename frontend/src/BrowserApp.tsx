@@ -15,18 +15,18 @@ function BrowserApp() {
         <BackgroundError />
       </div>
       <div className="pb-5">
-        <OnlyofficeError text={t("context.error.title") || "Error"} />
+        <OnlyofficeError text={t("context.error.title", "Error")} />
       </div>
       <OnlyofficeSubtitle
-        text={
-          t("context.error.text") ||
+        text={t(
+          "context.error.text",
           "Something went wrong. Please reload the page or contact the site administrator."
-        }
+        )}
       />
       <div className="pt-5 z-[100]">
         <OnlyofficeButton
           primary
-          text={t("button.reload") || "Reload"}
+          text={t("button.reload", "Reload")}
           onClick={() => window.location.reload()}
         />
       </div>
