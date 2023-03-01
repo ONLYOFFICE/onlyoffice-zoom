@@ -15,6 +15,7 @@ import (
 	zclient "github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/client"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/request"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/response"
+	"github.com/mitchellh/mapstructure"
 	"go-micro.dev/v4/cache"
 	"go-micro.dev/v4/client"
 )
@@ -89,8 +90,8 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 		var ures response.UserResponse
 
 		if res, _, err := c.cache.Get(ctx, zctx.Uid); err == nil && res != nil {
-			if buf, ok := res.([]byte); ok {
-				json.Unmarshal(buf, &ures)
+			if err := mapstructure.Decode(res, &ures); err != nil {
+				c.logger.Errorf("could not decode from cache: %s", err.Error())
 			}
 		}
 
@@ -224,10 +225,8 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 		defer cancel()
 
 		if res, _, err := c.cache.Get(ctx, zctx.Uid); err == nil && res != nil {
-			if buf, ok := res.([]byte); ok {
-				if err := json.Unmarshal(buf, &ures); err != nil {
-					c.logger.Errorf("could not unmarshal cached value: %s", err.Error())
-				}
+			if err := mapstructure.Decode(res, &ures); err != nil {
+				c.logger.Errorf("could not decode from cache: %s", err.Error())
 			}
 		}
 

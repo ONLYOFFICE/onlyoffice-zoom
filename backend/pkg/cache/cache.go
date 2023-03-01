@@ -2,35 +2,26 @@ package cache
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
-	gocache "github.com/eko/gocache/lib/v4/cache"
+	"github.com/eko/gocache/lib/v4/marshaler"
 	"github.com/eko/gocache/lib/v4/store"
 	"go-micro.dev/v4/cache"
 )
 
 type CustomCache struct {
-	store *gocache.Cache[string]
+	store *marshaler.Marshaler
 	name  string
 }
 
 func (c *CustomCache) Get(ctx context.Context, key string) (interface{}, time.Time, error) {
-	res, err := c.store.Get(ctx, key)
-	if err != nil {
-		return nil, time.Now(), err
-	}
-
-	return []byte(res), time.Now(), nil
+	var result interface{}
+	_, err := c.store.Get(ctx, key, &result)
+	return result, time.Now(), err
 }
 
 func (c *CustomCache) Put(ctx context.Context, key string, val interface{}, d time.Duration) error {
-	buf, err := json.Marshal(val)
-	if err != nil {
-		return err
-	}
-
-	return c.store.Set(ctx, key, string(buf), store.WithExpiration(d))
+	return c.store.Set(ctx, key, val, store.WithExpiration(d))
 }
 
 func (c *CustomCache) Delete(ctx context.Context, key string) error {
@@ -48,17 +39,17 @@ func NewCache(opts ...Option) cache.Cache {
 	case Memory:
 		return &CustomCache{
 			store: newMemory(options.Size),
-			name:  "freecache",
+			name:  "Freecache",
 		}
 	case Redis:
 		return &CustomCache{
-			store: newRedis(options.Address, options.Username, options.Password, options.DB),
-			name:  "redis",
+			store: newRedis(options.Address, options.Password, options.DB),
+			name:  "Redis",
 		}
 	default:
 		return &CustomCache{
 			store: newMemory(options.Size),
-			name:  "freecache",
+			name:  "Frecache",
 		}
 	}
 }

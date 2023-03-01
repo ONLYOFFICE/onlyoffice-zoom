@@ -16,7 +16,6 @@ type Options struct {
 	CacheType CacheType
 	Size      int
 	Address   string
-	Username  string
 	Password  string
 	DB        int
 }
@@ -55,14 +54,6 @@ func WithAddress(val string) Option {
 	return func(o *Options) {
 		if val != "" {
 			o.Address = val
-		}
-	}
-}
-
-func WithUsername(val string) Option {
-	return func(o *Options) {
-		if val != "" {
-			o.Username = val
 		}
 	}
 }

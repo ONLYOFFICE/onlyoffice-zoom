@@ -55,7 +55,6 @@ func NewService(opts ...Option) (*rpc.Service, error) {
 			CacheType: cache.CacheType(options.Cache.Type),
 			Size:      options.Cache.Size,
 			Address:   options.Cache.Address,
-			Username:  options.Cache.Username,
 			Password:  options.Cache.Password,
 		}),
 		rpc.WithRegistryOptions(registry.Options{

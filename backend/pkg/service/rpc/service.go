@@ -44,7 +44,6 @@ func NewService(opts ...Option) Service {
 		cache.WithCacheType(options.CacheOptions.CacheType),
 		cache.WithSize(options.CacheOptions.Size),
 		cache.WithAddress(options.CacheOptions.Address),
-		cache.WithUsername(options.CacheOptions.Username),
 		cache.WithPassword(options.CacheOptions.Password),
 	)
 

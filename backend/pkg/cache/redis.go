@@ -1,32 +1,20 @@
 package cache
 
 import (
-	"log"
-	"time"
-
 	"github.com/eko/gocache/lib/v4/cache"
-	"github.com/eko/gocache/lib/v4/store"
-	redis_store "github.com/eko/gocache/store/rueidis/v4"
-	"github.com/rueian/rueidis"
+	"github.com/eko/gocache/lib/v4/marshaler"
+	redis_store "github.com/eko/gocache/store/redis/v4"
+	"github.com/go-redis/redis/v8"
 )
 
-func newRedis(address, username, password string, db int) *cache.Cache[string] {
-	client, err := rueidis.NewClient(rueidis.ClientOption{
-		InitAddress: []string{address},
-		Username:    username,
-		Password:    password,
-		SelectDB:    db,
+func newRedis(address, password string, db int) *marshaler.Marshaler {
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     address,
+		Password: password,
+		DB:       db,
 	})
-
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-
-	cacheManager := cache.New[string](redis_store.NewRueidis(
-		client,
-		store.WithExpiration(15*time.Second),
-		store.WithClientSideCaching(15*time.Second)),
-	)
-
-	return cacheManager
+	redisStore := redis_store.NewRedis(redisClient)
+	cacheManager := cache.New[string](redisStore)
+	marshaller := marshaler.New(cacheManager.GetCodec().GetStore())
+	return marshaller
 }

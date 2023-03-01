@@ -3,12 +3,12 @@ package response
 import "encoding/json"
 
 type UserResponse struct {
-	ID           string `json:"id" mapstructure:"id"`
-	AccessToken  string `json:"access_token" mapstructure:"access_token"`
-	RefreshToken string `json:"refresh_token" mapstructure:"refresh_token"`
-	TokenType    string `json:"token_type" mapstructure:"token_type"`
-	Scope        string `json:"scope" mapstructure:"scope"`
-	ExpiresAt    int64  `json:"expires_at" mapstructure:"expires_at"`
+	ID           string `json:"id" mapstructure:"ID"`
+	AccessToken  string `json:"access_token" mapstructure:"AccessToken"`
+	RefreshToken string `json:"refresh_token" mapstructure:"RefreshToken"`
+	TokenType    string `json:"token_type" mapstructure:"TokenType"`
+	Scope        string `json:"scope" mapstructure:"Scope"`
+	ExpiresAt    int64  `json:"expires_at" mapstructure:"ExpiresAt"`
 }
 
 func (ur UserResponse) ToJSON() []byte {

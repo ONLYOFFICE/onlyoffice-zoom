@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"path/filepath"
@@ -21,6 +20,7 @@ import (
 	"github.com/ONLYOFFICE/zoom-onlyoffice/services/shared/response"
 	"github.com/google/uuid"
 	"github.com/mileusna/useragent"
+	"github.com/mitchellh/mapstructure"
 	"go-micro.dev/v4/cache"
 	"go-micro.dev/v4/client"
 	"golang.org/x/sync/singleflight"
@@ -132,10 +132,8 @@ func (c ConfigHandler) BuildConfig(ctx context.Context, payload request.BuildCon
 		var ures response.UserResponse
 
 		if res, _, err := c.cache.Get(ctx, payload.Uid); err == nil && res != nil {
-			if buf, ok := res.([]byte); ok {
-				if err := json.Unmarshal(buf, &ures); err != nil {
-					c.logger.Errorf("could not unmarshal cached value: %s", err.Error())
-				}
+			if err := mapstructure.Decode(res, &ures); err != nil {
+				c.logger.Errorf("could not decode from cache: %s", err.Error())
 			}
 		}
 
