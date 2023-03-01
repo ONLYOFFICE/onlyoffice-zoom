@@ -4,7 +4,8 @@ type CacheType int
 
 var (
 	Memory CacheType = 1
-	Micro  CacheType = 2
+	Redis  CacheType = 2
+	Micro  CacheType = 3
 )
 
 // Option defines a single option.
@@ -14,12 +15,17 @@ type Option func(*Options)
 type Options struct {
 	CacheType CacheType
 	Size      int
+	Address   string
+	Username  string
+	Password  string
+	DB        int
 }
 
 // NewOptions initializes the options.
 func NewOptions(opts ...Option) Options {
 	opt := Options{
 		Size: 100,
+		DB:   0,
 	}
 
 	for _, o := range opts {
@@ -41,6 +47,38 @@ func WithSize(val int) Option {
 	return func(o *Options) {
 		if val > 0 {
 			o.Size = val
+		}
+	}
+}
+
+func WithAddress(val string) Option {
+	return func(o *Options) {
+		if val != "" {
+			o.Address = val
+		}
+	}
+}
+
+func WithUsername(val string) Option {
+	return func(o *Options) {
+		if val != "" {
+			o.Username = val
+		}
+	}
+}
+
+func WithPassword(val string) Option {
+	return func(o *Options) {
+		if val != "" {
+			o.Password = val
+		}
+	}
+}
+
+func WithDB(val int) Option {
+	return func(o *Options) {
+		if val >= 0 {
+			o.DB = val
 		}
 	}
 }

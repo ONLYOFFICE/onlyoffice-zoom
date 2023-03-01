@@ -21,6 +21,7 @@ type Config struct {
 	Logger      config.Logger           `yaml:"logger"`
 	Tracer      config.Tracer           `yaml:"tracer"`
 	Worker      config.WorkerConfig     `yaml:"worker"`
+	Cache       config.Cache            `yaml:"cache"`
 	Context     context.Context         `yaml:"-"`
 }
 

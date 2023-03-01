@@ -397,6 +397,7 @@ func startGroup(config *config.Config) error {
 			service.WithBroker(config.Broker),
 			service.WithLogger(logger),
 			service.WithRegistry(config.Registry),
+			service.WithCache(config.Cache),
 			service.WithWorker(config.Worker),
 			service.WithContext(ctx),
 		)

@@ -20,6 +20,7 @@ type Options struct {
 	Tracer     config.Tracer
 	Broker     config.Broker
 	Registry   config.Registry
+	Cache      config.Cache
 	Context    context.Context
 	Logger     log.Logger
 }
@@ -99,5 +100,11 @@ func WithRedisConfig(val shared.RedisConfig) Option {
 func WithOnlyoffice(val shared.OnlyofficeConfig) Option {
 	return func(o *Options) {
 		o.Onlyoffice = val
+	}
+}
+
+func WithCache(val config.Cache) Option {
+	return func(o *Options) {
+		o.Cache = val
 	}
 }

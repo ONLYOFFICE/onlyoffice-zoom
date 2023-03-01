@@ -18,6 +18,7 @@ type Options struct {
 	Broker   config.Broker
 	Registry config.Registry
 	Zoom     shared.ZoomConfig
+	Cache    config.Cache
 	Logger   log.Logger
 	Context  context.Context
 }
@@ -85,5 +86,11 @@ func WithContext(val context.Context) Option {
 		if val != nil {
 			o.Context = val
 		}
+	}
+}
+
+func WithCache(val config.Cache) Option {
+	return func(o *Options) {
+		o.Cache = val
 	}
 }

@@ -112,7 +112,9 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 				rw.WriteHeader(microErr.Code)
 				return
 			}
-			c.cache.Put(ctx, zctx.Uid, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
+			if err := c.cache.Put(ctx, zctx.Uid, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6)); err != nil {
+				c.logger.Errorf("could not put a new cache entry: %s", err.Error())
+			}
 		}
 
 		c.logger.Debugf("got a user response: %v", ures)
@@ -223,7 +225,9 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 
 		if res, _, err := c.cache.Get(ctx, zctx.Uid); err == nil && res != nil {
 			if buf, ok := res.([]byte); ok {
-				json.Unmarshal(buf, &ures)
+				if err := json.Unmarshal(buf, &ures); err != nil {
+					c.logger.Errorf("could not unmarshal cached value: %s", err.Error())
+				}
 			}
 		}
 
@@ -245,7 +249,9 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 				rw.WriteHeader(microErr.Code)
 				return
 			}
-			c.cache.Put(ctx, zctx.Uid, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6))
+			if err := c.cache.Put(ctx, zctx.Uid, ures, time.Duration((ures.ExpiresAt-time.Now().UnixMilli())*1e6/6)); err != nil {
+				c.logger.Errorf("could not put a new cache entry: %s", err.Error())
+			}
 		}
 
 		usr, err := c.zoomAPI.GetMe(ctx, ures.AccessToken)

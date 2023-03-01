@@ -3,6 +3,7 @@ package service
 import (
 	"strings"
 
+	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/cache"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/messaging"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/registry"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/service/rpc"
@@ -47,6 +48,13 @@ func NewService(opts ...Option) (*rpc.Service, error) {
 			messaging.WithRequeueOnError(options.Broker.RequeueOnError),
 			messaging.WithAckOnSuccess(options.Broker.AckOnSuccess),
 		)),
+		rpc.WithCacheOptions(cache.Options{
+			CacheType: cache.CacheType(options.Cache.Type),
+			Size:      options.Cache.Size,
+			Address:   options.Cache.Address,
+			Username:  options.Cache.Username,
+			Password:  options.Cache.Password,
+		}),
 		rpc.WithRegistryOptions(registry.Options{
 			Addresses:    options.Registry.Addresses,
 			CacheTTL:     options.Registry.CacheTTL,

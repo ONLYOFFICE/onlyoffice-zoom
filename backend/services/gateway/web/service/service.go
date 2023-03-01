@@ -3,6 +3,7 @@ package service
 import (
 	"strings"
 
+	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/cache"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/messaging"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/middleware/cors"
 	"github.com/ONLYOFFICE/zoom-onlyoffice/pkg/registry"
@@ -59,6 +60,13 @@ func NewService(opts ...Option) (*http.Service, error) {
 			messaging.WithRequeueOnError(options.Broker.RequeueOnError),
 			messaging.WithAckOnSuccess(options.Broker.AckOnSuccess),
 		)),
+		http.WithCacheOptions(cache.Options{
+			CacheType: cache.CacheType(options.Cache.Type),
+			Size:      options.Cache.Size,
+			Address:   options.Cache.Address,
+			Username:  options.Cache.Username,
+			Password:  options.Cache.Password,
+		}),
 		http.WithRegistryOptions(registry.Options{
 			Addresses:    options.Registry.Addresses,
 			CacheTTL:     options.Registry.CacheTTL,

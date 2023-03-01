@@ -20,6 +20,7 @@ type Options struct {
 	Broker     config.Broker
 	Registry   config.Registry
 	Worker     config.WorkerConfig
+	Cache      config.Cache
 	Logger     log.Logger
 	Context    context.Context
 }
@@ -101,5 +102,11 @@ func WithRegistry(val config.Registry) Option {
 func WithWorker(val config.WorkerConfig) Option {
 	return func(o *Options) {
 		o.Worker = val
+	}
+}
+
+func WithCache(val config.Cache) Option {
+	return func(o *Options) {
+		o.Cache = val
 	}
 }

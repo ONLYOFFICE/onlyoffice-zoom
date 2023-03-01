@@ -375,6 +375,7 @@ func startGroup(config *config.Config) error {
 			service.WithContext(ctx),
 			service.WithZoomConfig(config.Zoom),
 			service.WithRedisConfig(config.Redis),
+			service.WithCache(config.Cache),
 			service.WithOnlyoffice(config.Onlyoffice),
 		)
 

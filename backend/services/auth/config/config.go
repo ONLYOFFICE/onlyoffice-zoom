@@ -28,6 +28,7 @@ type Config struct {
 	Broker      config.Broker     `yaml:"broker"`
 	Registry    config.Registry   `yaml:"registry"`
 	Logger      config.Logger     `yaml:"logger"`
+	Cache       config.Cache      `yaml:"config"`
 	Tracer      config.Tracer     `yaml:"tracer"`
 	Context     context.Context   `yaml:"-"`
 }

@@ -21,6 +21,7 @@ type Config struct {
 	Registry    config.Registry         `yaml:"registry"`
 	Logger      config.Logger           `yaml:"logger"`
 	Tracer      config.Tracer           `yaml:"tracer"`
+	Cache       config.Cache            `yaml:"cache"`
 	Context     context.Context         `yaml:"-"`
 }
 
