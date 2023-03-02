@@ -125,12 +125,12 @@ func (c apiController) BuildGetFiles() http.HandlerFunc {
 		res, err := c.zoomAPI.GetFilesFromMessages(fctx, ures.AccessToken, params)
 		if err != nil {
 			c.cache.Delete(context.Background(), zctx.Uid)
-			c.logger.Errorf("could not get files messages: %s", err.Error())
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)
 				return
 			}
 
+			c.logger.Errorf("could not get files messages: %s", err.Error())
 			microErr := response.MicroError{}
 			if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
@@ -187,12 +187,12 @@ func (c apiController) BuildGetConfig() http.HandlerFunc {
 			Filename:  fileName,
 			FileURL:   fileURL,
 		}), &resp); err != nil {
-			c.logger.Errorf("could not build onlyoffice config: %s", err.Error())
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)
 				return
 			}
 
+			c.logger.Errorf("could not build onlyoffice config: %s", err.Error())
 			microErr := response.MicroError{}
 			if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
@@ -233,12 +233,12 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 		if ures.AccessToken == "" || ures.ID == "" {
 			err := c.client.Call(ctx, ureq, &ures)
 			if err != nil {
-				c.logger.Errorf("could not get user access info: %s", err.Error())
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 					rw.WriteHeader(http.StatusRequestTimeout)
 					return
 				}
 
+				c.logger.Errorf("could not get user access info: %s", err.Error())
 				microErr := response.MicroError{}
 				if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
 					rw.WriteHeader(http.StatusUnauthorized)
@@ -256,7 +256,9 @@ func (c apiController) BuildGetMe() http.HandlerFunc {
 		usr, err := c.zoomAPI.GetMe(ctx, ures.AccessToken)
 		if err != nil {
 			c.cache.Delete(context.Background(), zctx.Uid)
-			c.logger.Errorf("could not get me: %s", err.Error())
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				c.logger.Errorf("could not get me: %s", err.Error())
+			}
 			rw.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -283,12 +285,12 @@ func (c apiController) BuildDeleteSession() http.HandlerFunc {
 				Mid: zctx.Mid,
 				Uid: zctx.Uid,
 			})); err != nil {
-				c.logger.Errorf("could not build remove owner session: %s", err.Error())
 				if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 					rw.WriteHeader(http.StatusRequestTimeout)
 					return
 				}
 
+				c.logger.Errorf("could not build remove owner session: %s", err.Error())
 				microErr := response.MicroError{}
 				if err := json.Unmarshal([]byte(err.Error()), &microErr); err != nil {
 					rw.WriteHeader(http.StatusInternalServerError)
