@@ -88,7 +88,7 @@ export const MainProvider: React.FC<ProviderProps> = ({ children }) => {
       zoomSdk
         .getMeetingUUID()
         .then(() => {
-          socket = new ReconnectingWebSocket(urlProvider, ["wss", "ws"], {
+          socket = new ReconnectingWebSocket(urlProvider, [], {
             maxRetries: 5,
           });
           socket.onopen = () => {

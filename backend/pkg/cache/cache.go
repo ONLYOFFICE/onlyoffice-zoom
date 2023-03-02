@@ -49,7 +49,7 @@ func NewCache(opts ...Option) cache.Cache {
 	default:
 		return &CustomCache{
 			store: newMemory(options.Size),
-			name:  "Frecache",
+			name:  "Freecache",
 		}
 	}
 }
