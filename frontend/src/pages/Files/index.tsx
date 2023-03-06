@@ -105,7 +105,11 @@ export const FilesPage: React.FC = () => {
                           onClick={() => openFile(file)}
                           supported={
                             isFileSupported(file.file_name) &&
-                            +file.file_size <= 20000000
+                            +file.file_size <=
+                              parseInt(
+                                process.env.FILE_SIZE_LIMIT || "200000000",
+                                10
+                              )
                           }
                         />
                       </div>
@@ -120,7 +124,11 @@ export const FilesPage: React.FC = () => {
                         onClick={() => openFile(file)}
                         supported={
                           isFileSupported(file.file_name) &&
-                          +file.file_size <= 2000000
+                          +file.file_size <=
+                            parseInt(
+                              process.env.FILE_SIZE_LIMIT || "200000000",
+                              10
+                            )
                         }
                       />
                     </div>

@@ -20,6 +20,7 @@ module.exports = merge(common, {
             "process.env.SPREADSHEET_FILE": JSON.stringify(
                 process.env.SPREADSHEET_FILE
             ),
+            "process.env.FILE_SIZE_LIMIT": JSON.stringify(process.env.FILE_SIZE_LIMIT),
         }),
     ],
 });
