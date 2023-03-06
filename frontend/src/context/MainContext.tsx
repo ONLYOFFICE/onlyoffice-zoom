@@ -6,13 +6,10 @@ import React, {
   useRef,
   useState,
 } from "react";
-import i18next from "i18next";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { proxy } from "valtio";
 import md5 from "md5";
 import zoomSdk from "@zoom/appssdk";
-
-import { getMe } from "@services/me";
 
 import { MeResponse } from "src/types/user";
 
@@ -72,21 +69,6 @@ export const MainProvider: React.FC<ProviderProps> = ({ children }) => {
     setReady(false);
     setError(false);
     Promise.all([
-      getMe().then(async (result) => {
-        const {
-          id,
-          email,
-          first_name: firstName,
-          last_name: lastName,
-          language,
-        } = result.response;
-        await i18next.changeLanguage(language);
-        CurrentUser.id = id;
-        CurrentUser.email = email;
-        CurrentUser.first_name = firstName;
-        CurrentUser.last_name = lastName;
-        CurrentUser.language = language;
-      }),
       zoomSdk
         .getMeetingUUID()
         .then(() => {
