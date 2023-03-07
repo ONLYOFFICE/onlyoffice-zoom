@@ -8,6 +8,7 @@ type BuildConfigRequest struct {
 	UserAgent string `json:"user_agent"`
 	Filename  string `json:"file_name"`
 	FileURL   string `json:"file_url"`
+	Language  string `json:"language"`
 }
 
 func (c BuildConfigRequest) ToJSON() []byte {

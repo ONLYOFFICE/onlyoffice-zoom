@@ -114,7 +114,7 @@ func (c ConfigHandler) processConfig(ctx context.Context, user response.UserResp
 				Plugins:       false,
 				HideRightMenu: true,
 			},
-			Lang: u.Language,
+			Lang: request.Language,
 		},
 		DocumentType: fileType,
 		Type:         t,

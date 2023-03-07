@@ -6,6 +6,7 @@ import { ConfigResponse } from "src/types/config";
 export const fetchConfig = async (
   name: string,
   url: string,
+  lang: string,
   signal?: AbortSignal
 ) => {
   const zctx = await zoomSdk.getAppContext();
@@ -15,6 +16,7 @@ export const fetchConfig = async (
     params: {
       file_name: name,
       file_url: url,
+      lang,
     },
     headers: {
       "Content-Type": "application/json",

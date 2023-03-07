@@ -152,7 +152,7 @@ func (c apiController) BuildGetConfig() http.HandlerFunc {
 		rw.Header().Set("Content-Type", "application/json")
 
 		query := r.URL.Query()
-		fileName, fileURL := strings.TrimSpace(query.Get("file_name")), strings.TrimSpace(query.Get("file_url"))
+		fileName, fileURL, lang := strings.TrimSpace(query.Get("file_name")), strings.TrimSpace(query.Get("file_url")), strings.TrimSpace(query.Get("lang"))
 
 		zctx, ok := r.Context().Value(security.ZoomContext{}).(security.ZoomContext)
 		if !ok {
@@ -186,6 +186,7 @@ func (c apiController) BuildGetConfig() http.HandlerFunc {
 			UserAgent: r.UserAgent(),
 			Filename:  fileName,
 			FileURL:   fileURL,
+			Language:  lang,
 		}), &resp); err != nil {
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				rw.WriteHeader(http.StatusRequestTimeout)
