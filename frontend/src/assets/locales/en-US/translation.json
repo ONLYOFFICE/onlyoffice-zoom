@@ -13,7 +13,7 @@
     "creation.newfile": "New document",
     "creation.title": "Create with ONLYOFFICE",
     "creation.input": "Title",
-    "creation.input.error": "File name must contain have 0-200 characters",
+    "creation.input.error": "File name must contain 0-200 characters",
     "creation.tile.document": "Document",
     "creation.tile.spreadsheet": "Spreadsheet",
     "creation.tile.presentation": "Presentation",
