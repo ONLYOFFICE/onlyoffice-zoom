@@ -7,7 +7,7 @@
     "files.title": "I miei documenti Zoom",
     "files.search": "Cercare",
     "files.error.nofiles": "Impossibile trovare i documenti Zoom",
-    "editor.error": "Impossibile aprire il documento. Qualcosa è andato storto",
+    "editor.error": "Impossibile aprire il documento. Qualcosa è andato storto.",
     "context.error.title": "Errore",
     "context.error.text": "Qualcosa è andato storto. Ti preghiamo di ricaricare la pagina o contattare l'amministratore del sito.",
     "creation.newfile": "Nuovo documento",
@@ -20,5 +20,5 @@
     "session.title": "Benvenuti in ONLYOFFICE!",
     "session.subtitle": "La sessione di modifica del documento è stata avviata da un altro utente. Vorresti partecipare a questa sessione?",
     "welcome.title": "Benvenuti in ONLYOFFICE!",
-    "welcome.subtitle": "Puoi aprire e creare un nuovo documento senza registrazione o carica i tuoi documenti con Drag'n'Drop"
+    "welcome.subtitle": "Puoi aprire e creare un nuovo documento senza registrazione."
 }

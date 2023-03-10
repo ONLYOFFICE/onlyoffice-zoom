@@ -7,7 +7,7 @@
     "files.title": "Meine Zoom-Dokument",
     "files.search": "Suchen",
     "files.error.nofiles": "Keine Zoom-Dokumente vorhanden",
-    "editor.error": "Das Dokument konnte nicht geöffnet werden. Etwas ist schief gelaufen",
+    "editor.error": "Das Dokument konnte nicht geöffnet werden. Etwas ist schief gelaufen.",
     "context.error.title": "Fehler",
     "context.error.text": "Es ist ein Fehler aufgetreten. Bitte laden Sie die Seite neu oder wenden Sie sich an den Administrator der Website.",
     "creation.newfile": "Neues Dokument",
@@ -20,5 +20,5 @@
     "session.title": "Willkommen auf ONLYOFFICE!",
     "session.subtitle": "Eine Sitzung zur Bearbeitung eines Dokuments wurde von einem anderen Benutzer gestartet. An dieser Sitzung teilnehmen?",
     "welcome.title": "Willkommen auf ONLYOFFICE!",
-    "welcome.subtitle": "Sie können ein neues Dokument ohne Registrierung öffnen und erstellen oder Ihre eigenen Dokumente per Drag'n'Drop hochladen"
+    "welcome.subtitle": "Sie können ein neues Dokument ohne Registrierung öffnen und erstellen."
 }

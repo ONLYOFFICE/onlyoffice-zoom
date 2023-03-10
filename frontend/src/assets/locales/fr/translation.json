@@ -7,9 +7,9 @@
     "files.title": "Mes documents Zoom",
     "files.search": "Rechercher",
     "files.error.nofiles": "Impossible de trouver les documents Zoom",
-    "editor.error": "Impossible d'ouvrir le document. Un problème est survenu",
+    "editor.error": "Impossible d'ouvrir le document. Un problème est survenu.",
     "context.error.title": "Erreur",
-    "context.error.text": "Un problème est survenu. Veuillez recharger la page ou contacter l'administrateur du site",
+    "context.error.text": "Un problème est survenu. Veuillez recharger la page ou contacter l'administrateur du site.",
     "creation.newfile": "Nouveau document",
     "creation.title": "Créer avec ONLYOFFICE",
     "creation.input": "Titre",
@@ -20,5 +20,5 @@
     "session.title": "Bienvenue dans ONLYOFFICE !",
     "session.subtitle": "Une session d'édition de document a été lancée par un autre utilisateur. Rejoindre cette session ?",
     "welcome.title": "Bienvenue dans ONLYOFFICE !",
-    "welcome.subtitle": "Vous pouvez ouvrir et créer un nouveau document sans inscription ou télécharger vos propres documents en utilisant la fonction Glisser-déposer"
+    "welcome.subtitle": "Vous pouvez ouvrir et créer un nouveau document sans inscription."
 }

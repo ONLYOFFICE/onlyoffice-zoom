@@ -7,7 +7,7 @@
     "files.title": "Mis documentos de Zoom",
     "files.search": "Búsqueda",
     "files.error.nofiles": "No se han encontrado documentos de Zoom",
-    "editor.error": "No se ha podido abrir el documento. Ha ocurrido un error",
+    "editor.error": "No se ha podido abrir el documento. Ha ocurrido un error.",
     "context.error.title": "Error",
     "context.error.text": "Ha ocurrido un error. Por favor, vuelva a cargar la página o póngase en contacto con el administrador del sitio.",
     "creation.newfile": "Nuevo documento",
@@ -20,5 +20,5 @@
     "session.title": "¡Bienvenido/a a ONLYOFFICE",
     "session.subtitle": "La sesión de edición del documento ha sido iniciada por otro usuario. ¿Desea unirse a esta sesión?",
     "welcome.title": "¡Bienvenido/a a ONLYOFFICE",
-    "welcome.subtitle": "Puede abrir y crear un nuevo documento sin tener que registrarse o cargar sus propios documentos mediante la opción 'arrastrar y colocar'"
+    "welcome.subtitle": "Puede abrir y crear un nuevo documento sin tener que registrarse."
 }
