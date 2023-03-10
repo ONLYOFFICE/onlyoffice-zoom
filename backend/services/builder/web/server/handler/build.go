@@ -83,32 +83,32 @@ func (c ConfigHandler) processConfig(ctx context.Context, user response.UserResp
 
 	config = response.BuildConfigResponse{
 		Document: response.Document{
+			FileType: ext,
 			Key:   uuid.NewString(),
-			Title: request.Filename,
-			URL:   request.FileURL,
 			Permissions: response.Permissions{
-				Edit:                    constants.IsExtensionEditable(ext),
 				Download:                false,
+				Edit:                    constants.IsExtensionEditable(ext),
 				Print:                   false,
 			},
-			FileType: ext,
+			Title: request.Filename,
+			URL:   request.FileURL,
 		},
+		DocumentType: fileType,
 		EditorConfig: response.EditorConfig{
-			User: response.User{
-				ID:   u.ID,
-				Name: strings.Join([]string{u.Firstname, u.Lastname}, " "),
-			},
 			CallbackURL: c.callbackURL,
 			Customization: response.Customization{
 				Goback: response.Goback{
 					RequestClose: true,
 				},
-				Plugins:       false,
 				HideRightMenu: true,
+				Plugins:       false,
 			},
 			Lang: request.Language,
+			User: response.User{
+				ID:   u.ID,
+				Name: strings.Join([]string{u.Firstname, u.Lastname}, " "),
+			},
 		},
-		DocumentType: fileType,
 		Type:         t,
 		Owner:        true,
 	}

@@ -31,16 +31,16 @@ type Permissions struct {
 type Document struct {
 	FileType    string      `json:"fileType"`
 	Key         string      `json:"key"`
+	Permissions Permissions `json:"permissions"`
 	Title       string      `json:"title"`
 	URL         string      `json:"url"`
-	Permissions Permissions `json:"permissions"`
 }
 
 type EditorConfig struct {
-	User          User          `json:"user"`
 	CallbackURL   string        `json:"callbackUrl"`
 	Customization Customization `json:"customization,omitempty"`
 	Lang          string        `json:"lang,omitempty"`
+	User          User          `json:"user"`
 }
 
 type User struct {
@@ -50,8 +50,8 @@ type User struct {
 
 type Customization struct {
 	Goback        Goback `json:"goback"`
-	Plugins       bool   `json:"plugins"`
 	HideRightMenu bool   `json:"hideRightMenu"`
+	Plugins       bool   `json:"plugins"`
 }
 
 type Goback struct {
