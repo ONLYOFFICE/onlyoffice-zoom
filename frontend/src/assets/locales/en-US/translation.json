@@ -7,7 +7,7 @@
     "files.title": "My Zoom documents",
     "files.search": "Search",
     "files.error.nofiles": "Could not find Zoom documents",
-    "editor.error": "Could not open the document. Something went wrong",
+    "editor.error": "Could not open the document. Something went wrong.",
     "context.error.title": "Error",
     "context.error.text": "Something went wrong. Please reload the page or contact the site administrator.",
     "creation.newfile": "New document",
@@ -20,5 +20,5 @@
     "session.title": "Welcome to ONLYOFFICE!",
     "session.subtitle": "Document editing session has been started by another user. Join this session?",
     "welcome.title": "Welcome to ONLYOFFICE!",
-    "welcome.subtitle": "You may open and create a new document without registration or upload your own documents using Drag'n'Drop"
+    "welcome.subtitle": "You may open and create a new document without registration."
 }

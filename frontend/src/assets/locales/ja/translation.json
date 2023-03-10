@@ -7,7 +7,7 @@
     "files.title": "私のZoom文書",
     "files.search": "検索",
     "files.error.nofiles": "Zoom文書が見つかりませんでした",
-    "editor.error": "文書を開くことができませんでした。何らかのエラーが発生しました",
+    "editor.error": "文書を開くことができませんでした。何らかのエラーが発生しました。",
     "context.error.title": "エラー",
     "context.error.text": "何らかのエラーが発生しました。ページを再度読み込むか、サイトの管理者までお問い合わせください。",
     "creation.newfile": "新しいドキュメント",
@@ -20,5 +20,5 @@
     "session.title": "ONLYOFFICEへようこそ！",
     "session.subtitle": "他のユーザーによって文書編集セッションが開始されました。このセッションに参加しますか？",
     "welcome.title": "ONLYOFFICEへようこそ！",
-    "welcome.subtitle": "登録なしで新しいドキュメントを開いて作成したり、ドラッグ・アンド・ドロップで自分のドキュメントをアップロードすることができます。"
+    "welcome.subtitle": "登録なしで新しいドキュメントを作成したり、開いたりすることができます。"
 }
