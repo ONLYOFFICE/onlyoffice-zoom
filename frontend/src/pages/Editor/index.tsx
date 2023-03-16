@@ -79,8 +79,8 @@ export const OnlyofficeEditorPage: React.FC = () => {
         </div>
       )}
       {!!error && (
-        <div className="w-screen h-screen flex justify-center flex-col items-center mb-1">
-          <div className="absolute flex justify-center items-center w-screen h-screen">
+        <div className="w-screen h-screen flex justify-center flex-col items-center mb-1 overflow-hidden">
+          <div className="absolute flex justify-center items-center w-screen h-screen overflow-hidden">
             <BackgroundError />
           </div>
           <div className="pb-5">
