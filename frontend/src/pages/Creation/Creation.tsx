@@ -35,8 +35,7 @@ export const CreatePage: React.FC = () => {
           value={file}
           onChange={(e) => setFile(e.target.value)}
           errorText={
-            t("creation.input.error") ||
-            "File name must contain have 0-200 characters"
+            t("creation.input.error") || "File name must have 0-200 characters"
           }
           valid={file.length > 0 && file.length <= 200}
         />
