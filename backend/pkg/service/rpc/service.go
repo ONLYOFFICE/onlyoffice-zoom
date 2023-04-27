@@ -45,6 +45,7 @@ func NewService(opts ...Option) Service {
 		cache.WithSize(options.CacheOptions.Size),
 		cache.WithAddress(options.CacheOptions.Address),
 		cache.WithPassword(options.CacheOptions.Password),
+		cache.WithDB(options.CacheOptions.DB),
 	)
 
 	registry := registry.NewRegistry(
