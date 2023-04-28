@@ -75,7 +75,7 @@ func (s CallbackService) NewHandler(client client.Client, cache cache.Cache) int
 func (s *CallbackService) InitializeServer(c client.Client, cache cache.Cache) *chi.Mux {
 	s.client = c
 	s.cache = cache
-	s.worker.Register("callback-upload", workerh.NewCallbackWorker(s.namespace, c, s.uploadTimeout, s.logger).UploadFile)
+	s.worker.Register("zoom-callback-upload", workerh.NewCallbackWorker(s.namespace, c, s.uploadTimeout, s.logger).UploadFile)
 	s.InitializeRoutes()
 	s.worker.Run()
 	return s.mux

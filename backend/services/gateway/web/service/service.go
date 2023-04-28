@@ -65,6 +65,7 @@ func NewService(opts ...Option) (*http.Service, error) {
 			Size:      options.Cache.Size,
 			Address:   options.Cache.Address,
 			Password:  options.Cache.Password,
+			DB:        options.Cache.DB,
 		}),
 		http.WithRegistryOptions(registry.Options{
 			Addresses:    options.Registry.Addresses,
