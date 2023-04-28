@@ -25,6 +25,7 @@ func newAsynqWorker(opts ...WorkerOption) BackgroundWorker {
 		Password:     options.RedisCredentials.Password,
 		ReadTimeout:  options.RedisCredentials.ReadTimeout,
 		WriteTimeout: options.RedisCredentials.WriteTimeout,
+		DB:           options.RedisCredentials.Database,
 	}
 	if len(options.RedisCredentials.Addresses) > 1 {
 		workerOpts = asynq.RedisClusterClientOpt{
@@ -68,6 +69,7 @@ func newAsynqEnqueuer(opts ...WorkerOption) BackgroundEnqueuer {
 		Password:     options.RedisCredentials.Password,
 		ReadTimeout:  options.RedisCredentials.ReadTimeout,
 		WriteTimeout: options.RedisCredentials.WriteTimeout,
+		DB:           options.RedisCredentials.Database,
 	}
 	if len(options.RedisCredentials.Addresses) > 1 {
 		enqOpts = asynq.RedisClusterClientOpt{
