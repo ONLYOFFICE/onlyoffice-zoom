@@ -34,7 +34,7 @@ type mongoUserAdapter struct {
 
 func NewMongoUserAdapter(url string) port.UserAccessServiceAdapter {
 	if err := mgm.SetDefaultConfig(
-		&mgm.Config{CtxTimeout: 3 * time.Second}, "users",
+		&mgm.Config{CtxTimeout: 3 * time.Second}, "zoom",
 		options.Client().ApplyURI(url),
 	); err != nil {
 		log.Fatalf("mongo initialization error: %s", err.Error())
