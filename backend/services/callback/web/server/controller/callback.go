@@ -203,7 +203,7 @@ func (c callbackController) BuildPostHandleCallback() http.HandlerFunc {
 						return
 					}
 
-					if err := c.enqueuer.Enqueue("callback-upload", message.JobMessage{
+					if err := c.enqueuer.Enqueue("zoom-callback-upload", message.JobMessage{
 						UID:      usr,
 						Filename: filename,
 						Url:      body.URL,
